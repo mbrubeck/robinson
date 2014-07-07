@@ -1,0 +1,13 @@
+[package]
+
+name = "robinson"
+version = "0.0.1"
+readme = "README.md"
+authors = ["Matt Brubeck <mbrubeck@limpet.net>"]
+tags = []
+
+[[bin]]
+
+name = "robinson"
+path = "src/main.rs"
+
