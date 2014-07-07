@@ -1,7 +1,8 @@
 Robinson
 ========
 
-A toy web rendering engine written in the Rust language.
+A toy web rendering engine written in the Rust language, by Matt Brubeck
+(mbrubeck@limpet.net).
 
 I'm writing this code purely for educational purposes. My goal is to create an
 incomplete but extremely simple engine as a way to learn more about basic
