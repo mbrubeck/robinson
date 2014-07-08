@@ -1,9 +1,9 @@
 extern crate debug;
 
 mod dom;
+mod html;
 
 fn main() {
-    let t = box dom::text("Hello");
-    let e = box dom::elem("div", Some(vec!(t)));
-    println!("{:?}", e);
+    let e = html::parse("<div>Hello <em>there</em></div>".to_string());
+    println!("{}", e);
 }
