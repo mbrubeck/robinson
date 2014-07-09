@@ -1,5 +1,7 @@
 use std::fmt;
 
+// Basic DOM data structures:
+
 pub enum Node {
     Element(ElementData),
     Text(TextData),
@@ -21,6 +23,8 @@ pub struct TextData {
     pub data: String,
 }
 
+// Constructor functions for convenience:
+
 impl Node {
     pub fn new_text(data: String) -> Node {
         Text(TextData {
@@ -40,6 +44,8 @@ impl Node {
         })
     }
 }
+
+// Formatting for debug output:
 
 impl fmt::Show for Node {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
