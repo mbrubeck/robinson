@@ -1,7 +1,6 @@
-use std::fmt;
+//! Basic DOM data structures:
 
-// Basic DOM data structures:
-
+#[deriving(Show)]
 pub enum Node {
     Element(ElementData),
     Text(TextData),
@@ -9,15 +8,18 @@ pub enum Node {
 
 pub type NodeList = Vec<Box<Node>>;
 
+#[deriving(Show)]
 pub struct NodeData {
     pub children: Option<NodeList>,
 }
 
+#[deriving(Show)]
 pub struct ElementData {
     pub node: NodeData,
     pub local_name: String,
 }
 
+#[deriving(Show)]
 pub struct TextData {
     pub node: NodeData,
     pub data: String,
@@ -42,29 +44,5 @@ impl Node {
             },
             local_name: local_name,
         })
-    }
-}
-
-// Formatting for debug output:
-
-impl fmt::Show for Node {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Text(ref text) => {
-                write!(f, "{}", text.data)
-            }
-            Element(ref elem) => {
-                try!(write!(f, "<{}>", elem.local_name));
-                match elem.node.children {
-                    Some(ref children) => {
-                        for child in children.iter() {
-                            try!(write!(f, "{}", *child));
-                        }
-                    }
-                    None => {}
-                }
-                write!(f, "</{}>", elem.local_name)
-            }
-        }
     }
 }
