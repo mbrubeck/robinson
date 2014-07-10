@@ -1,4 +1,6 @@
-//! A simple HTML parser.  Can parse basic opening and closing tags, and text nodes.
+//! A simple parser for a tiny subset of HTML.
+//!
+//! Can parse basic opening and closing tags, and text nodes.
 //!
 //! Not yet supported:
 //!
