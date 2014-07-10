@@ -44,7 +44,6 @@ pub enum Value {
 #[deriving(Show)]
 pub enum Unit {
     Px,
-    // TODO: Everything else.
 }
 
 // Parsing:
@@ -58,7 +57,7 @@ pub fn parse(source: String) -> Stylesheet {
     parser.parse_stylesheet()
 }
 
-pub struct Parser {
+struct Parser {
     pos: uint,
     len: uint,
     input: String,
@@ -175,7 +174,7 @@ impl Parser {
     }
 
     /// Consume and discard zero or more whitespace characters.
-    pub fn consume_whitespace(&mut self) {
+    fn consume_whitespace(&mut self) {
         loop {
             match self.curr_char() {
                 Some(c) if c.is_whitespace() => self.consume_char(),
@@ -185,14 +184,14 @@ impl Parser {
     }
 
     /// Return the current character, and advance self.pos to the next character.
-    pub fn consume_char(&mut self) -> char {
+    fn consume_char(&mut self) -> char {
         let range = self.input.as_slice().char_range_at(self.pos);
         self.pos = range.next;
         range.ch
     }
 
     /// Read a character without consuming it.
-    pub fn char_at(&self, i: uint) -> Option<char> {
+    fn char_at(&self, i: uint) -> Option<char> {
         if i < self.len {
             Some(self.input.as_slice().char_at(i))
         } else {
@@ -200,11 +199,10 @@ impl Parser {
         }
     }
 
-    // Convenience functions for reading ahead 0 or 1 characters.
-    pub fn curr_char(&self) -> Option<char> { self.char_at(self.pos)     }
+    fn curr_char(&self) -> Option<char> { self.char_at(self.pos)     }
 
     /// Return true if all input is consumed.
-    pub fn eof(&self) -> bool {
+    fn eof(&self) -> bool {
         self.pos >= self.len
     }
 }
