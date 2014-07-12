@@ -25,8 +25,10 @@ pub enum Selector {
 }
 
 #[deriving(Show)]
-pub enum SimpleSelector {
-    TypeSelector(String),
+pub struct SimpleSelector {
+    local_name: Option<String>,
+    id: Option<String>,
+    class: Vec<String>,
 }
 
 #[deriving(Show)]
@@ -85,12 +87,45 @@ impl Parser {
 
     fn parse_selectors(&mut self) -> Vec<Selector> {
         let mut selectors = Vec::new();
-        selectors.push(self.parse_type_selector());
+        loop {
+            selectors.push(Simple(self.parse_simple_selector()));
+            self.consume_whitespace();
+            match self.curr_char() {
+                Some(',') => {
+                    self.consume_char();
+                    self.consume_whitespace();
+                    continue;
+                }
+                Some('{') => break,
+                _ => fail!("Unexpected end of selector list")
+            }
+        }
         selectors
     }
 
-    fn parse_type_selector(&mut self) -> Selector {
-        Simple(TypeSelector(self.parse_identifier()))
+    fn parse_simple_selector(&mut self) -> SimpleSelector {
+        let mut result = SimpleSelector { local_name: None, id: None, class: Vec::new() };
+        loop {
+            match self.curr_char().unwrap() {
+                '#' => {
+                    self.consume_char();
+                    result.id = Some(self.parse_identifier());
+                }
+                '.' => {
+                    self.consume_char();
+                    result.class.push(self.parse_identifier());
+                }
+                '*' => {
+                    // universal selector
+                    self.consume_char();
+                }
+                c if valid_identifier_char(c) => {
+                    result.local_name = Some(self.parse_identifier());
+                }
+                _ => break
+            }
+        }
+        result
     }
 
     fn parse_declarations(&mut self) -> Vec<Declaration> {
@@ -142,14 +177,11 @@ impl Parser {
             if c.is_none() {
                 break;
             }
-            match c.unwrap() {
-                // TODO: Include U+00A0 and higher.
-                'a'..'z' |
-                'A'..'Z' |
-                '0'..'9' |
-                '-' | '_' => name.push_char(self.consume_char()),
-                _ => break,
+            let c = c.unwrap();
+            if !valid_identifier_char(c) {
+                break;
             }
+            name.push_char(self.consume_char());
         }
         name
     }
@@ -204,5 +236,12 @@ impl Parser {
     /// Return true if all input is consumed.
     fn eof(&self) -> bool {
         self.pos >= self.len
+    }
+}
+
+fn valid_identifier_char(c: char) -> bool {
+    match c {
+        'a'..'z' | 'A'..'Z' | '0'..'9' | '-' | '_' => true, // TODO: Include U+00A0 and higher.
+        _ => false,
     }
 }
