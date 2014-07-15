@@ -1,5 +1,7 @@
 //! Basic DOM data structures:
 
+use std::collections::hashmap::HashMap;
+
 #[deriving(Show)]
 pub enum Node {
     Element(ElementData),
@@ -13,10 +15,13 @@ pub struct NodeData {
     pub children: NodeList,
 }
 
+pub type AttrMap = HashMap<String, String>;
+
 #[deriving(Show)]
 pub struct ElementData {
     pub node: NodeData,
     pub local_name: String,
+    pub attrs: AttrMap,
 }
 
 #[deriving(Show)]
@@ -37,12 +42,13 @@ impl Node {
         })
     }
 
-    pub fn new_elem(local_name: String, children: NodeList) -> Node {
+    pub fn new_elem(local_name: String, attrs: AttrMap, children: NodeList) -> Node {
         Element(ElementData {
             node: NodeData {
               children: children,
             },
             local_name: local_name,
+            attrs: attrs,
         })
     }
 }

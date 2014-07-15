@@ -11,7 +11,8 @@
 //! * Non-well-formed markup
 //! * Character entities
 
-use dom::{Node, NodeList};
+use dom::{Node, NodeList, AttrMap};
+use std::collections::hashmap::HashMap;
 
 pub fn parse(source: String) -> Node {
     let mut parser = Parser {
@@ -32,7 +33,7 @@ impl Parser {
     /// Parse a document and return the root element.
     fn parse_root(&mut self) -> Node {
         // TODO: Don't create a root <html> element if the input already contains one.
-        Node::new_elem("html".to_string(), self.parse_nodes())
+        Node::new_elem("html".to_string(), HashMap::new(), self.parse_nodes())
     }
 
     /// Parse a sequence of sibling nodes.
@@ -59,24 +60,56 @@ impl Parser {
 
     /// Parse a single element, including its open tag, contents, and closing tag.
     fn parse_element(&mut self) -> Option<Node> {
-        let name = self.parse_open_tag();
+        let (name, attrs) = self.parse_open_tag();
         let children = self.parse_nodes();
         self.consume_close_tag();
-        Some(Node::new_elem(name, children))
+        Some(Node::new_elem(name, attrs, children))
     }
 
     // Helper functions for parse_element:
 
-    fn parse_open_tag(&mut self) -> String {
+    fn parse_open_tag(&mut self) -> (String, AttrMap) {
         assert!(self.consume_char() == '<');
         let name = self.parse_tag_name();
+
+        let mut attrs = HashMap::new();
         loop {
-            match self.consume_char() {
-                '>' => break,
-                _   => continue, // TODO: Parse attributes
+            self.consume_whitespace();
+            match self.curr_char().unwrap() {
+                '>' => {
+                    self.consume_char();
+                    break;
+                }
+                _   => {
+                    let (name, value) = self.parse_attr();
+                    attrs.insert(name, value);
+                }
             }
         }
-        name
+        (name, attrs)
+    }
+
+    fn parse_attr(&mut self) -> (String, String) {
+        let name = self.parse_tag_name();
+        self.consume_whitespace();
+        assert!(self.consume_char() == '=');
+        self.consume_whitespace();
+        let value = self.parse_attr_value();
+        (name, value)
+    }
+
+    fn parse_attr_value(&mut self) -> String {
+        let open_quote = self.consume_char();
+        assert!(open_quote == '"' || open_quote == '\'');
+        let mut value = String::new();
+        loop {
+            let c = self.consume_char();
+            if c == open_quote {
+                break;
+            }
+            value.push_char(c);
+        }
+        value
     }
 
     fn parse_tag_name(&mut self) -> String {
