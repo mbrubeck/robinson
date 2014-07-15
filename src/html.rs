@@ -11,7 +11,7 @@
 //! * Non-well-formed markup
 //! * Character entities
 
-use dom::Node;
+use dom::{Node, NodeList};
 
 pub fn parse(source: String) -> Node {
     let mut parser = Parser {
@@ -36,7 +36,7 @@ impl Parser {
     }
 
     /// Parse a sequence of sibling nodes.
-    fn parse_nodes(&mut self) -> Vec<Box<Node>> {
+    fn parse_nodes(&mut self) -> NodeList {
         let mut nodes = Vec::new();
         loop {
             match self.parse_node() {

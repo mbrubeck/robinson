@@ -10,7 +10,7 @@ pub type NodeList = Vec<Box<Node>>;
 
 #[deriving(Show)]
 pub struct NodeData {
-    pub children: Option<NodeList>,
+    pub children: NodeList,
 }
 
 #[deriving(Show)]
@@ -31,7 +31,7 @@ impl Node {
     pub fn new_text(data: String) -> Node {
         Text(TextData {
             node: NodeData {
-              children: None
+              children: Vec::new()
             },
             data: data,
         })
@@ -40,7 +40,7 @@ impl Node {
     pub fn new_elem(local_name: String, children: NodeList) -> Node {
         Element(ElementData {
             node: NodeData {
-              children: Some(children),
+              children: children,
             },
             local_name: local_name,
         })
