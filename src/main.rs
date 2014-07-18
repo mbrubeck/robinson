@@ -1,8 +1,7 @@
-#![feature(struct_variant)]
-
+mod css;
 mod dom;
 mod html;
-mod css;
+mod style;
 
 fn main() {
     let e = html::parse("<div id='a' class='b'>Hello <em>there</em></div>".to_string());

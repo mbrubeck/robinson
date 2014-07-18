@@ -26,9 +26,9 @@ pub enum Selector {
 
 #[deriving(Show)]
 pub struct SimpleSelector {
-    local_name: Option<String>,
-    id: Option<String>,
-    class: Vec<String>,
+    pub local_name: Option<String>,
+    pub id: Option<String>,
+    pub class: Vec<String>,
 }
 
 #[deriving(Show)]

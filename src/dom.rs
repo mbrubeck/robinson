@@ -1,6 +1,6 @@
 //! Basic DOM data structures.
 
-use std::collections::hashmap::HashMap;
+use std::collections::hashmap::{HashMap, HashSet};
 
 pub type AttrMap = HashMap<String, String>;
 
@@ -12,27 +12,30 @@ pub struct Node {
 
 #[deriving(Show)]
 pub enum NodeType {
-    Element {
-        local_name: String,
-        attributes: AttrMap,
-    },
-    Text {
-        data: String,
-    },
+    Element(ElementData),
+    Text(String),
+}
+
+#[deriving(Show)]
+pub struct ElementData {
+    pub local_name: String,
+    pub attributes: AttrMap,
 }
 
 // Constructor functions for convenience:
 
 pub fn text(data: String) -> Node {
-    Node::new(Text { data: data })
+    Node::new(Text(data))
 }
 
 pub fn elem(name: String, attrs: AttrMap) -> Node {
-    Node::new(Element {
+    Node::new(Element(ElementData {
         local_name: name,
         attributes: attrs,
-    })
+    }))
 }
+
+// Node methods
 
 impl Node {
     fn new(node_type: NodeType) -> Node {
@@ -40,5 +43,23 @@ impl Node {
             children: vec!(),
             node_type: node_type
         }
+    }
+}
+
+// Element methods
+
+impl ElementData {
+    pub fn get_attribute<'a>(&'a self, key: &str) -> Option<&'a String> {
+        self.attributes.find_equiv(&key)
+    }
+
+    pub fn id<'a>(&'a self) -> Option<&'a String> {
+        self.get_attribute("id")
+    }
+
+    pub fn classes(&self) -> HashSet<String> {
+        self.get_attribute("class").iter().flat_map(|classlist| {
+            classlist.as_slice().split(' ').map(|s| s.to_string())
+        }).collect()
     }
 }
