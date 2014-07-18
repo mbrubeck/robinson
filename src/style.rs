@@ -1,13 +1,20 @@
 use dom::{ElementData};
+use css::{Stylesheet, Rule};
 use css::{Selector, Simple, SimpleSelector};
 
-fn matches_selector(elem: ElementData, selector: Selector) -> bool {
-    match selector {
-        Simple(simple_selector) => matches_simple_selector(elem, simple_selector)
+pub fn matching_rules<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> Vec<&'a Rule> {
+    stylesheet.rules.iter()
+        .filter(|rule| rule.selectors.iter().any(|s| matches_selector(elem, s)))
+        .collect()
+}
+
+fn matches_selector(elem: &ElementData, selector: &Selector) -> bool {
+    match *selector {
+        Simple(ref simple_selector) => matches_simple_selector(elem, simple_selector)
     }
 }
 
-fn matches_simple_selector(elem: ElementData, selector: SimpleSelector) -> bool {
+fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> bool {
     // Check type selector
     if selector.local_name.iter().any(|name| elem.local_name != *name) {
         return false;
