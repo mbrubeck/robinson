@@ -11,10 +11,10 @@
 //! * Non-well-formed markup
 //! * Character entities
 
-use dom::{Node, NodeList, AttrMap};
+use dom;
 use std::collections::hashmap::HashMap;
 
-pub fn parse(source: String) -> Node {
+pub fn parse(source: String) -> dom::Node {
     let mut parser = Parser {
         pos: 0u,
         len: source.len(),
@@ -31,25 +31,25 @@ struct Parser {
 
 impl Parser {
     /// Parse a document and return the root element.
-    fn parse_root(&mut self) -> Node {
+    fn parse_root(&mut self) -> dom::Node {
         // TODO: Don't create a root <html> element if the input already contains one.
-        Node::new_elem("html".to_string(), HashMap::new(), self.parse_nodes())
+        let mut root = dom::elem("html".to_string(), HashMap::new());
+        self.parse_nodes(&mut root);
+        root
     }
 
     /// Parse a sequence of sibling nodes.
-    fn parse_nodes(&mut self) -> NodeList {
-        let mut nodes = Vec::new();
+    fn parse_nodes(&mut self, parent: &mut dom::Node) {
         loop {
             match self.parse_node() {
-                Some(node) => nodes.push(box node),
+                Some(node) => parent.children.push(node),
                 None => break
             }
         }
-        nodes
     }
 
     /// Parse a single node. Returns None if there is no node at the current position.
-    fn parse_node(&mut self) -> Option<Node> {
+    fn parse_node(&mut self) -> Option<dom::Node> {
         self.consume_whitespace();
         match (self.curr_char(), self.next_char()) {
             (Some('<'), Some('/')) => None, // Unexpected end tag. Stop parsing nodes.
@@ -59,20 +59,19 @@ impl Parser {
     }
 
     /// Parse a single element, including its open tag, contents, and closing tag.
-    fn parse_element(&mut self) -> Option<Node> {
-        let (name, attrs) = self.parse_open_tag();
-        let children = self.parse_nodes();
+    fn parse_element(&mut self) -> Option<dom::Node> {
+        let mut elem = self.parse_open_tag();
+        self.parse_nodes(&mut elem);
         self.consume_close_tag();
-        Some(Node::new_elem(name, attrs, children))
+        Some(elem)
     }
 
     // Helper functions for parse_element:
 
-    fn parse_open_tag(&mut self) -> (String, AttrMap) {
+    fn parse_open_tag(&mut self) -> dom::Node {
         assert!(self.consume_char() == '<');
         let name = self.parse_tag_name();
-
-        let mut attrs = HashMap::new();
+        let mut attributes = HashMap::new();
         loop {
             self.consume_whitespace();
             match self.curr_char().unwrap() {
@@ -82,11 +81,11 @@ impl Parser {
                 }
                 _   => {
                     let (name, value) = self.parse_attr();
-                    attrs.insert(name, value);
+                    attributes.insert(name, value);
                 }
             }
         }
-        (name, attrs)
+        dom::elem(name, attributes)
     }
 
     fn parse_attr(&mut self) -> (String, String) {
@@ -139,7 +138,7 @@ impl Parser {
     }
 
     /// Parse a text node.
-    fn parse_text(&mut self) -> Option<Node> {
+    fn parse_text(&mut self) -> Option<dom::Node> {
         if self.eof() {
             return None;
         }
@@ -151,7 +150,7 @@ impl Parser {
                 _         => data.push_char(self.consume_char())
             }
         }
-        Some(Node::new_text(data))
+        Some(dom::text(data))
     }
 
     /// Consume and discard zero or more whitespace characters.

@@ -1,3 +1,5 @@
+#![feature(struct_variant)]
+
 mod dom;
 mod html;
 mod css;
