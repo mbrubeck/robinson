@@ -48,6 +48,19 @@ pub enum Unit {
     Px,
 }
 
+pub type Specificity = (uint, uint, uint);
+
+impl Selector {
+    pub fn specificity(&self) -> Specificity {
+        // http://www.w3.org/TR/selectors/#specificity
+        let Simple(ref simple) = *self;
+        let a = simple.id.iter().len();
+        let b = simple.class.len();
+        let c = simple.local_name.iter().len();
+        (a, b, c)
+    }
+}
+
 // Parsing:
 
 pub fn parse(source: String) -> Stylesheet {
@@ -100,6 +113,8 @@ impl Parser {
                 _ => fail!("Unexpected end of selector list")
             }
         }
+        // Return selectors with highest specificity first, for use in matching.
+        selectors.sort_by(|a,b| b.specificity().cmp(&a.specificity()));
         selectors
     }
 

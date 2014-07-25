@@ -4,19 +4,41 @@
 //! complicated if I add support for compound selectors.
 
 use dom::{ElementData};
-use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector};
+use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector, Value};
+use std::collections::hashmap::HashMap;
+
+pub type PropertyMap<'a> =  HashMap<&'a String, &'a Value>;
+
+pub fn specified_values<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> PropertyMap<'a> {
+    let mut values = HashMap::new();
+    let mut rules = matching_rules(elem, stylesheet);
+
+    // Go through the rules from lowest to highest specificity.
+    rules.sort_by(|&(a, _), &(b, _)| a.specificity().cmp(&b.specificity()));
+    for &(_, rule) in rules.iter() {
+        for declaration in rule.declarations.iter() {
+            values.insert(&declaration.name, &declaration.value);
+        }
+    }
+    values
+}
+
+type MatchedRule<'a> = (&'a Selector, &'a Rule);
 
 /// Find all CSS rules that match the given element.
-pub fn matching_rules<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> Vec<&'a Rule> {
+fn matching_rules<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> Vec<MatchedRule<'a>> {
     // For now, we just do a linear scan of all the rules.  For large
     // documents, it would be more efficient to store the rules in hash tables
     // based on tag name, id, class, etc.
     stylesheet.rules.iter()
-        .filter(|rule| rule.selectors.iter().any(|s| matches_selector(elem, s)))
-        .collect()
+        .filter_map(|rule| {
+            // Find the first (highest-specificity) matching selector.
+            rule.selectors.iter().find(|selector| matches(elem, *selector))
+                .map(|selector| (selector, rule))
+        }).collect()
 }
 
-fn matches_selector(elem: &ElementData, selector: &Selector) -> bool {
+fn matches(elem: &ElementData, selector: &Selector) -> bool {
     match *selector {
         Simple(ref simple_selector) => matches_simple_selector(elem, simple_selector)
     }
