@@ -21,3 +21,18 @@ Why create a simple—but useless—toy rendering engine? Mostly because I
 personally want to learn how to do it. If I succeed, I also hope that other
 people can learn from my code by reading or modifying it, or learn from my
 experience as they set out to build their own toy browser engines.
+
+Status
+------
+
+Currently implemented:
+
+* Parse a small subset of HTML and build a DOM tree.
+* Parse a small subset of CSS.
+* Perform selector matching to apply styles to elements.
+
+Coming soon, I hope:
+
+* Basic block and inline layout.
+* Paint text and boxes.
+* Load resources from network or filesystem.
