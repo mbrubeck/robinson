@@ -10,9 +10,6 @@ fn main() {
     let stylesheet = css::parse("div, *, span#foo.bar { display: block; height: 1px; }".to_string());
     println!("{}\n", stylesheet);
 
-    let declarations = match root_node.node_type {
-        dom::Element(ref elem) => style::specified_values(elem, &stylesheet),
-        _ => fail!("not an element")
-    };
-    println!("{}\n", declarations);
+    let style_tree = style::style_tree(&root_node, &stylesheet);
+    println!("{}\n", style_tree);
 }
