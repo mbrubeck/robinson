@@ -1,15 +1,41 @@
+extern crate getopts;
+
+use getopts::{optopt,getopts};
+use std::os::args;
+use std::io::fs::File;
+
 mod css;
 mod dom;
 mod html;
 mod style;
 
 fn main() {
-    let root_node = html::parse("<div id='a' class='b'>Hello <em>there</em></div>".to_string());
-    println!("{}\n", root_node);
+    // Parse command-line options:
+    let opts = [
+        optopt("h", "html", "HTML document", "FILENAME"),
+        optopt("c", "css", "CSS stylesheet", "FILENAME"),
+    ];
+    let matches = match getopts(args().tail(), opts) {
+        Ok(m) => m,
+        Err(f) => fail!(f.to_string())
+    };
 
-    let stylesheet = css::parse("div, *, span#foo.bar { display: block; height: 1px; }".to_string());
-    println!("{}\n", stylesheet);
+    // Read input files:
+    let read_source = |arg_filename: Option<String>, default_filename: &str| {
+        let path = match arg_filename {
+            Some(ref filename) => filename.as_slice(),
+            None => default_filename,
+        };
+        File::open(&Path::new(path)).read_to_string().unwrap()
+    };
+    let html = read_source(matches.opt_str("h"), "examples/test.html");
+    let css  = read_source(matches.opt_str("c"), "examples/test.css");
 
+    // Parsing and rendering:
+    let root_node = html::parse(html);
+    let stylesheet = css::parse(css);
     let style_tree = style::style_tree(&root_node, &stylesheet);
+
+    // Debug output:
     println!("{}\n", style_tree);
 }
