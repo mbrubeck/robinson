@@ -6,7 +6,10 @@ pub type AttrMap = HashMap<String, String>;
 
 #[deriving(Show)]
 pub struct Node {
+    // data common to all nodes:
     pub children: Vec<Node>,
+
+    // data specific to each node type:
     pub node_type: NodeType,
 }
 
@@ -18,7 +21,7 @@ pub enum NodeType {
 
 #[deriving(Show)]
 pub struct ElementData {
-    pub local_name: String,
+    pub tag_name: String,
     pub attributes: AttrMap,
 }
 
@@ -30,7 +33,7 @@ pub fn text(data: String) -> Node {
 
 pub fn elem(name: String, attrs: AttrMap) -> Node {
     Node::new(Element(ElementData {
-        local_name: name,
+        tag_name: name,
         attributes: attrs,
     }))
 }

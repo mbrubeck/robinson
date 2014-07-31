@@ -26,7 +26,7 @@ pub enum Selector {
 
 #[deriving(Show)]
 pub struct SimpleSelector {
-    pub local_name: Option<String>,
+    pub tag_name: Option<String>,
     pub id: Option<String>,
     pub class: Vec<String>,
 }
@@ -56,7 +56,7 @@ impl Selector {
         let Simple(ref simple) = *self;
         let a = simple.id.iter().len();
         let b = simple.class.len();
-        let c = simple.local_name.iter().len();
+        let c = simple.tag_name.iter().len();
         (a, b, c)
     }
 }
@@ -119,7 +119,7 @@ impl Parser {
     }
 
     fn parse_simple_selector(&mut self) -> SimpleSelector {
-        let mut result = SimpleSelector { local_name: None, id: None, class: Vec::new() };
+        let mut result = SimpleSelector { tag_name: None, id: None, class: Vec::new() };
         loop {
             match self.curr_char().unwrap() {
                 '#' => {
@@ -135,7 +135,7 @@ impl Parser {
                     self.consume_char();
                 }
                 c if valid_identifier_char(c) => {
-                    result.local_name = Some(self.parse_identifier());
+                    result.tag_name = Some(self.parse_identifier());
                 }
                 _ => break
             }

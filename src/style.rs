@@ -75,7 +75,7 @@ fn matches(elem: &ElementData, selector: &Selector) -> bool {
 
 fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> bool {
     // Check type selector
-    if selector.local_name.iter().any(|name| elem.local_name != *name) {
+    if selector.tag_name.iter().any(|name| elem.tag_name != *name) {
         return false;
     }
 
