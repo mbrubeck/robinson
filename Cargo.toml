@@ -2,7 +2,6 @@
 
 name = "robinson"
 version = "0.0.1"
-readme = "README.md"
 authors = ["Matt Brubeck <mbrubeck@limpet.net>"]
 tags = []
 

@@ -239,8 +239,7 @@ doc: $(SOURCE_FILES) | src/
 	&& echo "--- Built documentation"
 
 run: exe
-	$(Q)cd bin/ \
-	&& ./main
+	$(Q)bin/main
 
 target-dir: $(TARGET_LIB_DIR)
 

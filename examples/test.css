@@ -1,0 +1,12 @@
+* {
+  display: block;
+}
+
+span {
+  display: inline;
+}
+
+span#name {
+  background: red;
+  color: white;
+}
