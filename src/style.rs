@@ -89,7 +89,7 @@ fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> boo
 
     // Check class selectors
     let elem_classes = elem.classes();
-    if selector.class.iter().any(|class| !elem_classes.contains(class)) {
+    if selector.class.iter().any(|class| !elem_classes.contains(&class.as_slice())) {
         return false;
     }
 

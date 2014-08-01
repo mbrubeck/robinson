@@ -60,9 +60,9 @@ impl ElementData {
         self.get_attribute("id")
     }
 
-    pub fn classes(&self) -> HashSet<String> {
+    pub fn classes<'a>(&'a self) -> HashSet<&'a str> {
         self.get_attribute("class").iter().flat_map(|classlist| {
-            classlist.as_slice().split(' ').map(|s| s.to_string())
+            classlist.as_slice().split(' ')
         }).collect()
     }
 }
