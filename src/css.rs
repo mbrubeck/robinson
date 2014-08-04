@@ -37,13 +37,13 @@ pub struct Declaration {
     pub value: Value,
 }
 
-#[deriving(Show)]
+#[deriving(Show, Clone, PartialEq)]
 pub enum Value {
     Keyword(String),
     Length(f32, Unit),
 }
 
-#[deriving(Show)]
+#[deriving(Show, Clone, PartialEq)]
 pub enum Unit {
     Px,
 }

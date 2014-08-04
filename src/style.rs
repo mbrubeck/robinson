@@ -10,13 +10,13 @@ use std::collections::hashmap::HashMap;
 /// A node with associated style data.
 #[deriving(Show)]
 pub struct StyledNode<'a> {
-    node: &'a Node,
-    specified_values: PropertyMap<'a>,
-    children: Vec<Box<StyledNode<'a>>>,
+    pub node: &'a Node,
+    pub specified_values: PropertyMap,
+    pub children: Vec<Box<StyledNode<'a>>>,
 }
 
 /// Map from CSS property names to values.
-pub type PropertyMap<'a> =  HashMap<&'a String, &'a Value>;
+pub type PropertyMap =  HashMap<String, Value>;
 
 /// Apply a stylesheet to an entire DOM tree, returning a StyledNode tree.
 ///
@@ -36,7 +36,7 @@ pub fn style_tree<'a>(root: &'a Node, stylesheet: &'a Stylesheet) -> StyledNode<
 /// Apply styles to a single element, returning the specified styles.
 ///
 /// To do: Allow multiple UA/author/user stylesheets, and implement the cascade.
-fn specified_values<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> PropertyMap<'a> {
+fn specified_values(elem: &ElementData, stylesheet: &Stylesheet) -> PropertyMap {
     let mut values = HashMap::new();
     let mut rules = matching_rules(elem, stylesheet);
 
@@ -44,7 +44,7 @@ fn specified_values<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> Prope
     rules.sort_by(|&(a, _), &(b, _)| a.specificity().cmp(&b.specificity()));
     for &(_, rule) in rules.iter() {
         for declaration in rule.declarations.iter() {
-            values.insert(&declaration.name, &declaration.value);
+            values.insert(declaration.name.clone(), declaration.value.clone());
         }
     }
     values

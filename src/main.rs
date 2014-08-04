@@ -7,6 +7,7 @@ use std::io::fs::File;
 mod css;
 mod dom;
 mod html;
+mod layout;
 mod style;
 
 fn main() {
@@ -35,6 +36,7 @@ fn main() {
     let root_node = html::parse(html);
     let stylesheet = css::parse(css);
     let style_tree = style::style_tree(&root_node, &stylesheet);
+    layout::calculate_block_width(&style_tree.specified_values, 800.0);
 
     // Debug output:
     println!("{}\n", style_tree);
