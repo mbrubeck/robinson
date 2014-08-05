@@ -4,7 +4,6 @@
 //!
 //! Not yet supported:
 //!
-//! * Attributes
 //! * Comments
 //! * Doctypes and processing instructions
 //! * Self-closing tags
