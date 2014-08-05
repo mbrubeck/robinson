@@ -66,7 +66,6 @@ impl Selector {
 pub fn parse(source: String) -> Stylesheet {
     let mut parser = Parser {
         pos: 0u,
-        len: source.len(),
         input: source,
     };
     parser.parse_stylesheet()
@@ -74,7 +73,6 @@ pub fn parse(source: String) -> Stylesheet {
 
 struct Parser {
     pos: uint,
-    len: uint,
     input: String,
 }
 
@@ -239,7 +237,7 @@ impl Parser {
 
     /// Read a character without consuming it.
     fn char_at(&self, i: uint) -> Option<char> {
-        if i < self.len {
+        if i < self.input.len() {
             Some(self.input.as_slice().char_at(i))
         } else {
             None
@@ -250,7 +248,7 @@ impl Parser {
 
     /// Return true if all input is consumed.
     fn eof(&self) -> bool {
-        self.pos >= self.len
+        self.pos >= self.input.len()
     }
 }
 

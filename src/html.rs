@@ -17,7 +17,6 @@ use std::collections::hashmap::HashMap;
 pub fn parse(source: String) -> dom::Node {
     let mut parser = Parser {
         pos: 0u,
-        len: source.len(),
         input: source,
     };
     parser.parse_root()
@@ -25,7 +24,6 @@ pub fn parse(source: String) -> dom::Node {
 
 struct Parser {
     pos: uint,
-    len: uint,
     input: String,
 }
 
@@ -172,7 +170,7 @@ impl Parser {
 
     /// Read a character without consuming it.
     fn char_at(&self, i: uint) -> Option<char> {
-        if i < self.len {
+        if i < self.input.len() {
             Some(self.input.as_slice().char_at(i))
         } else {
             None
@@ -185,6 +183,6 @@ impl Parser {
 
     /// Return true if all input is consumed.
     fn eof(&self) -> bool {
-        self.pos >= self.len
+        self.pos >= self.input.len()
     }
 }
