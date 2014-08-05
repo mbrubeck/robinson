@@ -99,16 +99,13 @@ impl Parser {
     fn parse_selectors(&mut self) -> Vec<Selector> {
         let mut selectors = Vec::new();
         loop {
+            self.consume_whitespace();
             selectors.push(Simple(self.parse_simple_selector()));
             self.consume_whitespace();
             match self.curr_char() {
-                Some(',') => {
-                    self.consume_char();
-                    self.consume_whitespace();
-                    continue;
-                }
-                Some('{') => break,
-                _ => fail!("Unexpected end of selector list")
+                ',' => { self.consume_char(); }
+                '{' => break,
+                c   => fail!("Unexpected character {} in selector list", c),
             }
         }
         // Return selectors with highest specificity first, for use in matching.
@@ -118,8 +115,8 @@ impl Parser {
 
     fn parse_simple_selector(&mut self) -> SimpleSelector {
         let mut result = SimpleSelector { tag_name: None, id: None, class: Vec::new() };
-        loop {
-            match self.curr_char().unwrap() {
+        while !self.eof() {
+            match self.curr_char() {
                 '#' => {
                     self.consume_char();
                     result.id = Some(self.parse_identifier());
@@ -147,7 +144,7 @@ impl Parser {
         let mut declarations = Vec::new();
         loop {
             self.consume_whitespace();
-            if self.curr_char() == Some('}') {
+            if self.curr_char() == '}' {
                 self.consume_char();
                 break;
             }
@@ -172,7 +169,7 @@ impl Parser {
     }
 
     fn parse_value(&mut self) -> Value {
-        match self.curr_char().unwrap() {
+        match self.curr_char() {
             '0'..'9' => self.parse_length(),
             _ => Keyword(self.parse_identifier())
         }
@@ -183,30 +180,14 @@ impl Parser {
     }
 
     fn parse_identifier(&mut self) -> String {
-        let mut name = String::new();
-        // TODO: Identifiers must not start with a digit or "--" or "-" and a digit.
-        loop {
-            let c = self.curr_char();
-            if c.is_none() {
-                break;
-            }
-            let c = c.unwrap();
-            if !valid_identifier_char(c) {
-                break;
-            }
-            name.push_char(self.consume_char());
-        }
-        name
+        self.consume_while(valid_identifier_char)
     }
 
     fn parse_float(&mut self) -> f32 {
-        let mut s = String::new();
-        loop {
-            match self.curr_char().unwrap() {
-                '0'..'9' | '.' => s.push_char(self.consume_char()),
-                _ => break
-            }
-        }
+        let mut s = self.consume_while(|c| match c {
+            '0'..'9' | '.' => true,
+            _ => false
+        });
         let f: Option<f32> = FromStr::from_str(s.as_slice());
         f.unwrap()
     }
@@ -220,12 +201,16 @@ impl Parser {
 
     /// Consume and discard zero or more whitespace characters.
     fn consume_whitespace(&mut self) {
-        loop {
-            match self.curr_char() {
-                Some(c) if c.is_whitespace() => self.consume_char(),
-                _ => break,
-            };
+        self.consume_while(|c| c.is_whitespace());
+    }
+
+    /// Consume characters until `test` returns false.
+    fn consume_while(&mut self, test: |char| -> bool) -> String {
+        let mut result = String::new();
+        while !self.eof() && test(self.curr_char()) {
+            result.push_char(self.consume_char());
         }
+        result
     }
 
     /// Return the current character, and advance self.pos to the next character.
@@ -235,16 +220,10 @@ impl Parser {
         range.ch
     }
 
-    /// Read a character without consuming it.
-    fn char_at(&self, i: uint) -> Option<char> {
-        if i < self.input.len() {
-            Some(self.input.as_slice().char_at(i))
-        } else {
-            None
-        }
+    /// Read the current character without consuming it.
+    fn curr_char(&self) -> char {
+        self.input.as_slice().char_at(self.pos)
     }
-
-    fn curr_char(&self) -> Option<char> { self.char_at(self.pos)     }
 
     /// Return true if all input is consumed.
     fn eof(&self) -> bool {
