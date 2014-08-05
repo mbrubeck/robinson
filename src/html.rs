@@ -80,8 +80,7 @@ impl Parser {
         dom::elem(tag_name, attrs, children)
     }
 
-    // Helper functions for parse_element:
-
+    /// Parse a tag or attribute name.
     fn parse_tag_name(&mut self) -> String {
         self.consume_while(|c| match c {
             'a'..'z' | 'A'..'Z' | '0'..'9' => true,
@@ -89,6 +88,7 @@ impl Parser {
         })
     }
 
+    /// Parse a list of name="value" pairs, separated by whitespace.
     fn parse_attributes(&mut self) -> dom::AttrMap {
         let mut attributes = HashMap::new();
         loop {
@@ -104,7 +104,7 @@ impl Parser {
         attributes
     }
 
-    // name="value"
+    /// Parse a single name="value" pair.
     fn parse_attr(&mut self) -> (String, String) {
         let name = self.parse_tag_name();
         assert!(self.consume_char() == '=');
@@ -112,11 +112,12 @@ impl Parser {
         (name, value)
     }
 
+    /// Parse a quoted value.
     fn parse_attr_value(&mut self) -> String {
         let open_quote = self.consume_char();
         assert!(open_quote == '"' || open_quote == '\'');
         let value = self.consume_while(|c| c != open_quote);
-        assert!(!self.eof() && self.consume_char() == open_quote);
+        assert!(self.consume_char() == open_quote);
         value
     }
 
