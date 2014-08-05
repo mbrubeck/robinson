@@ -61,7 +61,7 @@ impl Parser {
 
     /// Parse a single node. Returns None if there is no node at the current position.
     fn parse_node(&mut self) -> dom::Node {
-        match self.curr_char() {
+        match self.next_char() {
             '<' => self.parse_element(),
             _   => self.parse_text()
         }
@@ -97,7 +97,7 @@ impl Parser {
         let mut attributes = HashMap::new();
         loop {
             self.consume_whitespace();
-            match self.curr_char() {
+            match self.next_char() {
                 '>' => {
                     break;
                 }
@@ -150,7 +150,7 @@ impl Parser {
     /// Consume characters until `test` returns false.
     fn consume_while(&mut self, test: |char| -> bool) -> String {
         let mut result = String::new();
-        while !self.eof() && test(self.curr_char()) {
+        while !self.eof() && test(self.next_char()) {
             result.push_char(self.consume_char());
         }
         result
@@ -164,7 +164,7 @@ impl Parser {
     }
 
     /// Read the current character without consuming it.
-    fn curr_char(&self) -> char {
+    fn next_char(&self) -> char {
         self.input.as_slice().char_at(self.pos)
     }
 

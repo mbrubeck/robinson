@@ -102,10 +102,10 @@ impl Parser {
             self.consume_whitespace();
             selectors.push(Simple(self.parse_simple_selector()));
             self.consume_whitespace();
-            match self.curr_char() {
+            match self.next_char() {
                 ',' => { self.consume_char(); }
-                '{' => break,
-                c   => fail!("Unexpected character {} in selector list", c),
+                '{' => { break; }
+                c   => { fail!("Unexpected character {} in selector list", c); }
             }
         }
         // Return selectors with highest specificity first, for use in matching.
@@ -116,7 +116,7 @@ impl Parser {
     fn parse_simple_selector(&mut self) -> SimpleSelector {
         let mut result = SimpleSelector { tag_name: None, id: None, class: Vec::new() };
         while !self.eof() {
-            match self.curr_char() {
+            match self.next_char() {
                 '#' => {
                     self.consume_char();
                     result.id = Some(self.parse_identifier());
@@ -144,7 +144,7 @@ impl Parser {
         let mut declarations = Vec::new();
         loop {
             self.consume_whitespace();
-            if self.curr_char() == '}' {
+            if self.next_char() == '}' {
                 self.consume_char();
                 break;
             }
@@ -169,7 +169,7 @@ impl Parser {
     }
 
     fn parse_value(&mut self) -> Value {
-        match self.curr_char() {
+        match self.next_char() {
             '0'..'9' => self.parse_length(),
             _ => Keyword(self.parse_identifier())
         }
@@ -207,7 +207,7 @@ impl Parser {
     /// Consume characters until `test` returns false.
     fn consume_while(&mut self, test: |char| -> bool) -> String {
         let mut result = String::new();
-        while !self.eof() && test(self.curr_char()) {
+        while !self.eof() && test(self.next_char()) {
             result.push_char(self.consume_char());
         }
         result
@@ -221,7 +221,7 @@ impl Parser {
     }
 
     /// Read the current character without consuming it.
-    fn curr_char(&self) -> char {
+    fn next_char(&self) -> char {
         self.input.as_slice().char_at(self.pos)
     }
 
