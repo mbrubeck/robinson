@@ -14,12 +14,23 @@
 use dom;
 use std::collections::hashmap::HashMap;
 
+/// Parse an HTML document and return the root element.
 pub fn parse(source: String) -> dom::Node {
-    let mut parser = Parser {
+    let mut nodes = Parser {
         pos: 0u,
         input: source,
+    }.parse_nodes();
+
+    // If the document contains a root `<html>` element, just return it. Otherwise, create one.
+    let has_root = nodes.len() == 1 && match nodes[0].node_type {
+        dom::Element(ref elem) if elem.tag_name.as_slice() == "html" => true,
+        _ => false
     };
-    parser.parse_root()
+    if has_root {
+        nodes.swap_remove(0).unwrap()
+    } else {
+        dom::elem("html".to_string(), HashMap::new(), nodes)
+    }
 }
 
 struct Parser {
@@ -28,28 +39,9 @@ struct Parser {
 }
 
 impl Parser {
-    /// Parse a document and return the root element.
-    fn parse_root(&mut self) -> dom::Node {
-        let mut nodes = vec!();
-        self.parse_nodes(&mut nodes);
-
-        // If the document contains a root `<html>` element, just return it.
-        let has_root = nodes.len() == 1 && match nodes[0].node_type {
-            dom::Element(ref elem) if elem.tag_name.as_slice() == "html" => true,
-            _ => false
-        };
-        if has_root {
-            nodes.swap_remove(0).unwrap()
-        } else {
-            // If the root `<html>` element is missing, create one.
-            let mut root = dom::elem("html".to_string(), HashMap::new());
-            root.children.push_all_move(nodes);
-            root
-        }
-    }
-
     /// Parse a sequence of sibling nodes.
-    fn parse_nodes(&mut self, nodes: &mut Vec<dom::Node>) {
+    fn parse_nodes(&mut self) -> Vec<dom::Node> {
+        let mut nodes = vec!();
         loop {
             self.consume_whitespace();
             if self.eof() || self.starts_with("</") {
@@ -57,9 +49,10 @@ impl Parser {
             }
             nodes.push(self.parse_node());
         }
+        nodes
     }
 
-    /// Parse a single node. Returns None if there is no node at the current position.
+    /// Parse a single node.
     fn parse_node(&mut self) -> dom::Node {
         match self.next_char() {
             '<' => self.parse_element(),
@@ -69,22 +62,25 @@ impl Parser {
 
     /// Parse a single element, including its open tag, contents, and closing tag.
     fn parse_element(&mut self) -> dom::Node {
-        let mut elem = self.parse_open_tag();
-        self.parse_nodes(&mut elem.children);
-        self.consume_close_tag();
-        elem
-    }
-
-    // Helper functions for parse_element:
-
-    fn parse_open_tag(&mut self) -> dom::Node {
+        // Opening tag.
         assert!(self.consume_char() == '<');
-        let name = self.parse_tag_name();
+        let tag_name = self.parse_tag_name();
         let attrs = self.parse_attributes();
         assert!(self.consume_char() == '>');
 
-        dom::elem(name, attrs)
+        // Contents.
+        let children = self.parse_nodes();
+
+        // Closing tag.
+        assert!(self.consume_char() == '<');
+        assert!(self.consume_char() == '/');
+        assert!(self.parse_tag_name() == tag_name);
+        assert!(self.consume_char() == '>');
+
+        dom::elem(tag_name, attrs, children)
     }
+
+    // Helper functions for parse_element:
 
     fn parse_tag_name(&mut self) -> String {
         self.consume_while(|c| match c {
@@ -98,9 +94,7 @@ impl Parser {
         loop {
             self.consume_whitespace();
             match self.next_char() {
-                '>' => {
-                    break;
-                }
+                '>' => break,
                 _ => {
                     let (name, value) = self.parse_attr();
                     attributes.insert(name, value);
@@ -121,20 +115,9 @@ impl Parser {
     fn parse_attr_value(&mut self) -> String {
         let open_quote = self.consume_char();
         assert!(open_quote == '"' || open_quote == '\'');
-        let mut value = self.consume_while(|c| c != open_quote);
+        let value = self.consume_while(|c| c != open_quote);
         assert!(!self.eof() && self.consume_char() == open_quote);
         value
-    }
-
-    fn consume_close_tag(&mut self) {
-        assert!(self.consume_char() == '<');
-        assert!(self.consume_char() == '/');
-        loop {
-            match self.consume_char() {
-                '>' => break,
-                _   => continue,
-            }
-        }
     }
 
     /// Parse a text node.

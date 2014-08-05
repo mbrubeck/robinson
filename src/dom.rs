@@ -28,11 +28,11 @@ pub struct ElementData {
 // Constructor functions for convenience:
 
 pub fn text(data: String) -> Node {
-    Node::new(Text(data))
+    Node::new(vec!(), Text(data))
 }
 
-pub fn elem(name: String, attrs: AttrMap) -> Node {
-    Node::new(Element(ElementData {
+pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
+    Node::new(children, Element(ElementData {
         tag_name: name,
         attributes: attrs,
     }))
@@ -41,9 +41,9 @@ pub fn elem(name: String, attrs: AttrMap) -> Node {
 // Node methods
 
 impl Node {
-    fn new(node_type: NodeType) -> Node {
+    fn new(children: Vec<Node>, node_type: NodeType) -> Node {
         Node {
-            children: vec!(),
+            children: children,
             node_type: node_type
         }
     }
