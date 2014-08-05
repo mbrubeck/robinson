@@ -99,7 +99,6 @@ impl Parser {
     fn parse_selectors(&mut self) -> Vec<Selector> {
         let mut selectors = Vec::new();
         loop {
-            self.consume_whitespace();
             selectors.push(Simple(self.parse_simple_selector()));
             self.consume_whitespace();
             match self.next_char() {
@@ -139,7 +138,6 @@ impl Parser {
     }
 
     fn parse_declarations(&mut self) -> Vec<Declaration> {
-        self.consume_whitespace();
         assert!(self.consume_char() == '{');
         let mut declarations = Vec::new();
         loop {
