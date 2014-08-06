@@ -26,25 +26,36 @@ pub fn calculate_block_width(specified_values: &PropertyMap, containing_block_wi
     let padding_left = get_length("padding-left", "padding");
     let padding_right = get_length("padding-right", "padding");
 
-    let total = sum_lengths([&margin_left, &margin_right, &border_left, &border_right,
-                             &padding_left, &padding_right, &width]);
+    let total_width = sum_lengths([&margin_left, &margin_right, &border_left, &border_right,
+                                   &padding_left, &padding_right, &width]);
+
+    // If width is not auto and the total is wider than the container, treat auto margins as 0.
+    if width != auto && total_width > containing_block_width {
+        if margin_left == auto {
+            margin_left = Length(0.0, Px);
+        }
+        if margin_right == auto {
+            margin_right = Length(0.0, Px);
+        }
+    }
 
     // Adjust used values so that the above sum equals containing_block_width.
-    // Each arm of the `match` should increase the above sum by exactly `underflow`.
-    let underflow = containing_block_width - total;
+    // Each arm of the `match` should increase the total width by exactly `underflow`,
+    // and afterward all values should be absolute lengths in px.
+    let underflow = containing_block_width - total_width;
     match (width == auto, margin_left == auto, margin_right == auto) {
         // If the values are overconstrained, calculate margin_right.
         (false, false, false) => {
             margin_right = Length(px(margin_right) + underflow, Px);
         }
-        // If exactly one value is `auto`, its used value follows from the equality.
+        // If exactly one value is auto, its used value follows from the equality.
         (false, false, true) => {
             margin_right = Length(underflow, Px);
         }
         (false, true, false) => {
             margin_left = Length(underflow, Px);
         }
-        // If 'width' is set to 'auto', any other 'auto' values become '0'.
+        // If width is set to auto, any other auto values become 0.
         (true, _, _) => {
             if margin_left == auto {
                 margin_left = Length(0.0, Px);
