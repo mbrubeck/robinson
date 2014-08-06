@@ -12,7 +12,7 @@ use std::collections::hashmap::HashMap;
 pub struct StyledNode<'a> {
     pub node: &'a Node,
     pub specified_values: PropertyMap,
-    pub children: Vec<Box<StyledNode<'a>>>,
+    pub children: Vec<StyledNode<'a>>,
 }
 
 /// Map from CSS property names to values.
@@ -29,7 +29,7 @@ pub fn style_tree<'a>(root: &'a Node, stylesheet: &'a Stylesheet) -> StyledNode<
             Element(ref elem) => specified_values(elem, stylesheet),
             _ => HashMap::new(),
         },
-        children: root.children.iter().map(|child| box style_tree(child, stylesheet)).collect(),
+        children: root.children.iter().map(|child| style_tree(child, stylesheet)).collect(),
     }
 }
 
