@@ -85,13 +85,11 @@ impl Parser {
         let mut attributes = HashMap::new();
         loop {
             self.consume_whitespace();
-            match self.next_char() {
-                '>' => break,
-                _ => {
-                    let (name, value) = self.parse_attr();
-                    attributes.insert(name, value);
-                }
+            if self.next_char() == '>' {
+                break;
             }
+            let (name, value) = self.parse_attr();
+            attributes.insert(name, value);
         }
         attributes
     }
