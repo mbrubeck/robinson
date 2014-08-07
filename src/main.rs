@@ -35,9 +35,9 @@ fn main() {
     // Parsing and rendering:
     let root_node = html::parse(html);
     let stylesheet = css::parse(css);
-    let style_tree = style::style_tree(&root_node, &stylesheet);
-    layout::calculate_block_width(&style_tree.specified_values, 800.0);
+    let style_root = style::style_tree(&root_node, &stylesheet);
+    let dimensions = layout::calculate_dimensions(&style_root);
 
     // Debug output:
-    println!("{}\n", style_tree);
+    println!("{}\n", dimensions);
 }

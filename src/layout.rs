@@ -1,11 +1,37 @@
 ///! Basic CSS block layout.
 
-use style::{PropertyMap};
+use style::{StyledNode, PropertyMap};
 use css::{Value, Keyword, Length, Px};
+use std::default::Default;
 use std::iter::AdditiveIterator; // for `sum`
 
+// CSS box model. All sizes are in px.
+
+#[deriving(Default, Show)]
+struct Dimensions {
+    // Content area
+    width: f32,
+    height: f32,
+
+    // Surrounding edges
+    padding: EdgeSizes,
+    border: EdgeSizes,
+    margin: EdgeSizes,
+}
+
+#[deriving(Default, Show)]
+struct EdgeSizes { left: f32, right: f32, top: f32, bottom: f32 }
+
+pub fn calculate_dimensions(node: &StyledNode) -> Dimensions {
+    let mut dimensions = Default::default();
+    calculate_block_width(&node.specified_values, 800.0, &mut dimensions);
+    dimensions
+}
+
 /// Calculate the width of a block-level non-replaced element in normal flow.
-pub fn calculate_block_width(specified_values: &PropertyMap, containing_block_width: f32) {
+pub fn calculate_block_width(specified_values: &PropertyMap,
+                             containing_block_width: f32,
+                             dimensions: &mut Dimensions) {
     // http://www.w3.org/TR/CSS2/visudet.html#blockwidth
     let val = |name| specified_values.find_equiv(&name).map(|v| v.clone());
 
@@ -71,6 +97,17 @@ pub fn calculate_block_width(specified_values: &PropertyMap, containing_block_wi
             margin_right = Length(underflow / 2.0, Px);
         }
     }
+
+    dimensions.width = px(width);
+
+    dimensions.padding.left = px(padding_left);
+    dimensions.padding.right = px(padding_right);
+
+    dimensions.border.left = px(border_left);
+    dimensions.border.right = px(border_right);
+
+    dimensions.margin.left = px(margin_left);
+    dimensions.margin.right = px(margin_right);
 }
 
 /// Add together all the non-`auto` lengths.
