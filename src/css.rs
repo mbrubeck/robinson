@@ -61,14 +61,10 @@ impl Selector {
     }
 }
 
-// Parsing:
-
+/// Parse a whole CSS stylesheet.
 pub fn parse(source: String) -> Stylesheet {
-    let mut parser = Parser {
-        pos: 0u,
-        input: source,
-    };
-    parser.parse_stylesheet()
+    let mut parser = Parser { pos: 0u, input: source };
+    Stylesheet { rules: parser.parse_rules() }
 }
 
 struct Parser {
@@ -77,18 +73,18 @@ struct Parser {
 }
 
 impl Parser {
-    fn parse_stylesheet(&mut self) -> Stylesheet {
+    /// Parse a list of rule sets, separated by optional whitespace.
+    fn parse_rules(&mut self) -> Vec<Rule> {
         let mut rules = Vec::new();
         loop {
             self.consume_whitespace();
-            if self.eof() {
-                break;
-            }
+            if self.eof() { break }
             rules.push(self.parse_rule());
         }
-        Stylesheet { rules: rules }
+        rules
     }
 
+    /// Parse a rule set: `<selectors> { <declarations> }`.
     fn parse_rule(&mut self) -> Rule {
         Rule {
             selectors: self.parse_selectors(),
@@ -96,6 +92,7 @@ impl Parser {
         }
     }
 
+    /// Parse a comma-separated list of selectors.
     fn parse_selectors(&mut self) -> Vec<Selector> {
         let mut selectors = Vec::new();
         loop {
@@ -103,8 +100,8 @@ impl Parser {
             self.consume_whitespace();
             match self.next_char() {
                 ',' => { self.consume_char(); }
-                '{' => { break; }
-                c   => { fail!("Unexpected character {} in selector list", c); }
+                '{' => break,
+                c   => fail!("Unexpected character {} in selector list", c)
             }
         }
         // Return selectors with highest specificity first, for use in matching.
@@ -112,6 +109,7 @@ impl Parser {
         selectors
     }
 
+    /// Parse one simple selector, e.g.: `type#id.class1.class2.class3`
     fn parse_simple_selector(&mut self) -> SimpleSelector {
         let mut result = SimpleSelector { tag_name: None, id: None, class: Vec::new() };
         while !self.eof() {
@@ -137,6 +135,7 @@ impl Parser {
         result
     }
 
+    /// Parse a list of declarations enclosed in `{ ... }`.
     fn parse_declarations(&mut self) -> Vec<Declaration> {
         assert!(self.consume_char() == '{');
         let mut declarations = Vec::new();
@@ -151,6 +150,7 @@ impl Parser {
         declarations
     }
 
+    /// Parse one `<property>: <value>;` declaration.
     fn parse_declaration(&mut self) -> Declaration {
         let property_name = self.parse_identifier();
         self.consume_whitespace();
@@ -166,6 +166,7 @@ impl Parser {
         }
     }
 
+    /// Parse a value (supports only lengths and keywords for now).
     fn parse_value(&mut self) -> Value {
         match self.next_char() {
             '0'..'9' => self.parse_length(),
@@ -173,12 +174,10 @@ impl Parser {
         }
     }
 
+    // Helper functions for `parse_value`:
+
     fn parse_length(&mut self) -> Value {
         Length(self.parse_float(), self.parse_unit())
-    }
-
-    fn parse_identifier(&mut self) -> String {
-        self.consume_while(valid_identifier_char)
     }
 
     fn parse_float(&mut self) -> f32 {
@@ -195,6 +194,10 @@ impl Parser {
             "px" => Px,
             _ => fail!("unrecognized unit")
         }
+    }
+
+    fn parse_identifier(&mut self) -> String {
+        self.consume_while(valid_identifier_char)
     }
 
     /// Consume and discard zero or more whitespace characters.
