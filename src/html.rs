@@ -15,17 +15,10 @@ use std::collections::hashmap::HashMap;
 
 /// Parse an HTML document and return the root element.
 pub fn parse(source: String) -> dom::Node {
-    let mut nodes = Parser {
-        pos: 0u,
-        input: source,
-    }.parse_nodes();
+    let mut nodes = Parser { pos: 0u, input: source }.parse_nodes();
 
-    // If the document contains a root `<html>` element, just return it. Otherwise, create one.
-    let has_root = nodes.len() == 1 && match nodes[0].node_type {
-        dom::Element(ref elem) if elem.tag_name.as_slice() == "html" => true,
-        _ => false
-    };
-    if has_root {
+    // If the document contains a root element, just return it. Otherwise, create one.
+    if nodes.len() == 1 {
         nodes.swap_remove(0).unwrap()
     } else {
         dom::elem("html".to_string(), HashMap::new(), nodes)
