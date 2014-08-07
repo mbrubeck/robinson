@@ -1,11 +1,17 @@
 ///! Basic CSS block layout.
 
-use style::{StyledNode, PropertyMap};
+use style::StyledNode;
 use css::{Value, Keyword, Length, Px, Color};
 use std::default::Default;
 use std::iter::AdditiveIterator; // for `sum`
 
 // CSS box model. All sizes are in px.
+
+pub struct LayoutNode<'a> {
+    pub style_node: &'a StyledNode<'a>,
+    pub dimensions: Dimensions,
+    pub children: Vec<LayoutNode<'a>>,
+}
 
 #[deriving(Default, Show)]
 struct Dimensions {
@@ -22,17 +28,25 @@ struct Dimensions {
 #[deriving(Default, Show)]
 struct EdgeSizes { left: f32, right: f32, top: f32, bottom: f32 }
 
-pub fn calculate_dimensions(node: &StyledNode) -> Dimensions {
-    let mut dimensions = Default::default();
-    calculate_block_width(&node.specified_values, 800.0, &mut dimensions);
-    dimensions
+pub fn layout<'a>(node: &'a StyledNode<'a>, containing_block_width: f32) -> LayoutNode<'a> {
+    let mut layout_node = LayoutNode {
+        style_node: node,
+        dimensions: Default::default(),
+        children: Vec::new(),
+    };
+    calculate_width(&mut layout_node, containing_block_width);
+    for child in node.children.iter() {
+        layout_node.children.push(layout(child, layout_node.dimensions.width))
+    }
+    calculate_height(&mut layout_node);
+    layout_node
 }
 
 /// Calculate the width of a block-level non-replaced element in normal flow.
-pub fn calculate_block_width(specified_values: &PropertyMap,
-                             containing_block_width: f32,
-                             dimensions: &mut Dimensions) {
-    // http://www.w3.org/TR/CSS2/visudet.html#blockwidth
+///
+/// http://www.w3.org/TR/CSS2/visudet.html#blockwidth
+fn calculate_width(node: &mut LayoutNode, containing_block_width: f32) {
+    let specified_values = &node.style_node.specified_values;
     let val = |name| specified_values.find_equiv(&name).map(|v| v.clone());
 
     // `width` has initial value `auto`.
@@ -98,6 +112,7 @@ pub fn calculate_block_width(specified_values: &PropertyMap,
         }
     }
 
+    let dimensions = &mut node.dimensions;
     dimensions.width = px(width);
 
     dimensions.padding.left = px(padding_left);
@@ -110,12 +125,71 @@ pub fn calculate_block_width(specified_values: &PropertyMap,
     dimensions.margin.right = px(margin_right);
 }
 
+/// Height of a block-level non-replaced element in normal flow with overflow visible.
+///
+/// http://www.w3.org/TR/CSS2/visudet.html#normal-block
+fn calculate_height(node: &mut LayoutNode) {
+    let specified_values = &node.style_node.specified_values;
+    let val = |name| specified_values.find_equiv(&name).map(|v| v.clone());
+
+    // `height` has initial value `auto`.
+    let auto = Keyword("auto".to_string());
+    let mut height = val("height").unwrap_or(auto.clone());
+
+    // margin, border, and padding have initial value 0.
+    let get_length = |name, fallback| {
+        val(name).unwrap_or_else(|| val(fallback).unwrap_or(Length(0.0, Px)))
+    };
+    let mut margin_top = get_length("margin-top", "margin");
+    let mut margin_bottom = get_length("margin-bottom", "margin");
+
+    let border_top = get_length("border-top-width", "border-width");
+    let border_bottom = get_length("border-bottom-width", "border-width");
+
+    let padding_top = get_length("padding-top", "padding");
+    let padding_bottom = get_length("padding-bottom", "padding");
+
+    // If margin-top or margin-bottom is `auto`, the used value is 0.
+    if margin_top == auto {
+        margin_top = Length(0.0, Px);
+    }
+    if margin_bottom == auto {
+        margin_bottom = Length(0.0, Px);
+    }
+
+    // If height is `auto` the used value depends on the element's children.
+    if height == auto {
+        // TODO: margin collapsing
+        let content_height = node.children.iter().map(total_height).sum();
+        height = Length(content_height, Px);
+    }
+
+    let dimensions = &mut node.dimensions;
+    dimensions.height = px(height);
+
+    dimensions.padding.top = px(padding_top);
+    dimensions.padding.bottom = px(padding_bottom);
+
+    dimensions.border.top = px(border_top);
+    dimensions.border.bottom = px(border_bottom);
+
+    dimensions.margin.top = px(margin_top);
+    dimensions.margin.bottom = px(margin_bottom);
+}
+
 /// Add together all the non-`auto` lengths.
 fn sum_lengths(values: &[&Value]) -> f32 {
     values.iter().map(|value| match **value {
         Length(f, Px) => f,
         _ => 0.0 // ignore 'auto' or invalid widths
     }).sum()
+}
+
+fn total_height(node: &LayoutNode) -> f32 {
+    let d = &node.dimensions;
+    d.height + d.padding.top + d.padding.bottom
+             + d.border.top + d.border.bottom
+             + d.margin.top + d.margin.bottom
 }
 
 /// Return the size of a Length in px.

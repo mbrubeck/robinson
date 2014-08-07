@@ -36,8 +36,8 @@ fn main() {
     let root_node = html::parse(html);
     let stylesheet = css::parse(css);
     let style_root = style::style_tree(&root_node, &stylesheet);
-    let dimensions = layout::calculate_dimensions(&style_root);
+    let layout_root = layout::layout(&style_root, 800.0);
 
     // Debug output:
-    println!("{}\n", dimensions);
+    println!("{}", layout_root.dimensions);
 }

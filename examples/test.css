@@ -10,8 +10,9 @@ div {
   background: #0000cc;
 }
 
-span {
-  display: inline;
+.inner {
+  height: 100px;
+  margin-bottom: 20px;
 }
 
 span#name {
