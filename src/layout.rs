@@ -1,7 +1,7 @@
 ///! Basic CSS block layout.
 
 use style::{StyledNode, PropertyMap};
-use css::{Value, Keyword, Length, Px};
+use css::{Value, Keyword, Length, Px, Color};
 use std::default::Default;
 use std::iter::AdditiveIterator; // for `sum`
 
@@ -122,6 +122,6 @@ fn sum_lengths(values: &[&Value]) -> f32 {
 fn px(value: Value) -> f32 {
     match value {
         Length(f, Px) => f,
-        Keyword(_) => fail!("not a length")
+        Color(..) | Keyword(..) => fail!("not a length")
     }
 }

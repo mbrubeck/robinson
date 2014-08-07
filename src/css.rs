@@ -3,8 +3,9 @@
 //! To support more CSS syntax, it would probably be easiest to replace this
 //! hand-rolled parser with one based on a library or parser generator.
 
+use std::ascii::OwnedStrAsciiExt; // for `into_ascii_lower`
 use std::from_str::FromStr;
-use std::ascii::OwnedStrAsciiExt;
+use std::num::FromStrRadix;
 
 // Data structures:
 
@@ -41,6 +42,7 @@ pub struct Declaration {
 pub enum Value {
     Keyword(String),
     Length(f32, Unit),
+    Color(u8, u8, u8, u8), // RGBA
 }
 
 #[deriving(Show, Clone, PartialEq)]
@@ -166,15 +168,15 @@ impl Parser {
         }
     }
 
-    /// Parse a value (supports only lengths and keywords for now).
+    // Methods for parsing values:
+
     fn parse_value(&mut self) -> Value {
         match self.next_char() {
             '0'..'9' => self.parse_length(),
+            '#' => self.parse_color(),
             _ => Keyword(self.parse_identifier())
         }
     }
-
-    // Helper functions for `parse_value`:
 
     fn parse_length(&mut self) -> Value {
         Length(self.parse_float(), self.parse_unit())
@@ -196,6 +198,19 @@ impl Parser {
         }
     }
 
+    fn parse_color(&mut self) -> Value {
+        assert!(self.consume_char() == '#');
+        Color(self.parse_hex_pair(), self.parse_hex_pair(), self.parse_hex_pair(), 255)
+    }
+
+    /// Parse two hexadecimal digits.
+    fn parse_hex_pair(&mut self) -> u8 {
+        let s = self.input.as_slice().slice(self.pos, self.pos + 2);
+        self.pos = self.pos + 2;
+        FromStrRadix::from_str_radix(s, 0x10).unwrap()
+    }
+
+    /// Parse a property name or keyword.
     fn parse_identifier(&mut self) -> String {
         self.consume_while(valid_identifier_char)
     }
