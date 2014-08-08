@@ -28,24 +28,16 @@ pub struct ElementData {
 // Constructor functions for convenience:
 
 pub fn text(data: String) -> Node {
-    Node::new(vec!(), Text(data))
+    Node { children: vec![], node_type: Text(data) }
 }
 
 pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
-    Node::new(children, Element(ElementData {
-        tag_name: name,
-        attributes: attrs,
-    }))
-}
-
-// Node methods
-
-impl Node {
-    fn new(children: Vec<Node>, node_type: NodeType) -> Node {
-        Node {
-            children: children,
-            node_type: node_type
-        }
+    Node {
+        children: children,
+        node_type: Element(ElementData {
+            tag_name: name,
+            attributes: attrs,
+        })
     }
 }
 
