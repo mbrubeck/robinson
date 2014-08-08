@@ -1,8 +1,9 @@
 extern crate getopts;
 
 use getopts::{optopt,getopts};
-use std::os::args;
+use std::default::Default;
 use std::io::fs::File;
+use std::os::args;
 
 mod css;
 mod dom;
@@ -32,11 +33,22 @@ fn main() {
     let html = read_source(matches.opt_str("h"), "examples/test.html");
     let css  = read_source(matches.opt_str("c"), "examples/test.css");
 
+    // Since we don't have an actual window, hard-code the "viewport" size.
+    let initial_containing_block = layout::Dimensions {
+        width: 800.0,
+        height: 600.0,
+        x: 0.0,
+        y: 0.0,
+        padding: Default::default(),
+        border: Default::default(),
+        margin: Default::default(),
+    };
+
     // Parsing and rendering:
     let root_node = html::parse(html);
     let stylesheet = css::parse(css);
     let style_root = style::style_tree(&root_node, &stylesheet);
-    let layout_root = layout::layout(&style_root, 800.0);
+    let layout_root = layout::layout(&style_root, initial_containing_block);
 
     // Debug output:
     println!("{}", layout_root.dimensions);

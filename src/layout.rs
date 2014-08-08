@@ -5,38 +5,43 @@ use css::{Value, Keyword, Length, Px, Color};
 use std::default::Default;
 use std::iter::AdditiveIterator; // for `sum`
 
-// CSS box model. All sizes are in px.
-
+/// A tree of nodes with associated layout data.
 pub struct LayoutNode<'a> {
     pub style_node: &'a StyledNode<'a>,
     pub dimensions: Dimensions,
     pub children: Vec<LayoutNode<'a>>,
 }
 
-#[deriving(Default, Show)]
-struct Dimensions {
-    // Content area
-    width: f32,
-    height: f32,
+// CSS box model. All sizes are in px.
 
-    // Surrounding edges
-    padding: EdgeSizes,
-    border: EdgeSizes,
-    margin: EdgeSizes,
+#[deriving(Default, Show)]
+pub struct Dimensions {
+    // Content area:
+    pub width: f32,
+    pub height: f32,
+
+    // Position of the content area relative to the document origin:
+    pub x: f32,
+    pub y: f32,
+
+    // Surrounding edges:
+    pub padding: EdgeSizes,
+    pub border: EdgeSizes,
+    pub margin: EdgeSizes,
 }
 
 #[deriving(Default, Show)]
 struct EdgeSizes { left: f32, right: f32, top: f32, bottom: f32 }
 
-pub fn layout<'a>(node: &'a StyledNode<'a>, containing_block_width: f32) -> LayoutNode<'a> {
+pub fn layout<'a>(node: &'a StyledNode<'a>, containing_block: Dimensions) -> LayoutNode<'a> {
     let mut layout_node = LayoutNode {
         style_node: node,
         dimensions: Default::default(),
         children: Vec::new(),
     };
-    calculate_width(&mut layout_node, containing_block_width);
+    calculate_width(&mut layout_node, containing_block);
     for child in node.children.iter() {
-        layout_node.children.push(layout(child, layout_node.dimensions.width))
+        layout_node.children.push(layout(child, layout_node.dimensions))
     }
     calculate_height(&mut layout_node);
     layout_node
@@ -45,7 +50,7 @@ pub fn layout<'a>(node: &'a StyledNode<'a>, containing_block_width: f32) -> Layo
 /// Calculate the width of a block-level non-replaced element in normal flow.
 ///
 /// http://www.w3.org/TR/CSS2/visudet.html#blockwidth
-fn calculate_width(node: &mut LayoutNode, containing_block_width: f32) {
+fn calculate_width(node: &mut LayoutNode, containing_block: Dimensions) {
     let specified_values = &node.style_node.specified_values;
     let val = |name| specified_values.find_equiv(&name).map(|v| v.clone());
 
@@ -70,7 +75,7 @@ fn calculate_width(node: &mut LayoutNode, containing_block_width: f32) {
                                    &padding_left, &padding_right, &width]);
 
     // If width is not auto and the total is wider than the container, treat auto margins as 0.
-    if width != auto && total_width > containing_block_width {
+    if width != auto && total_width > containing_block.width {
         if margin_left == auto {
             margin_left = Length(0.0, Px);
         }
@@ -79,10 +84,10 @@ fn calculate_width(node: &mut LayoutNode, containing_block_width: f32) {
         }
     }
 
-    // Adjust used values so that the above sum equals containing_block_width.
+    // Adjust used values so that the above sum equals `containing_block.width`.
     // Each arm of the `match` should increase the total width by exactly `underflow`,
     // and afterward all values should be absolute lengths in px.
-    let underflow = containing_block_width - total_width;
+    let underflow = containing_block.width - total_width;
     match (width == auto, margin_left == auto, margin_right == auto) {
         // If the values are overconstrained, calculate margin_right.
         (false, false, false) => {
@@ -112,17 +117,19 @@ fn calculate_width(node: &mut LayoutNode, containing_block_width: f32) {
         }
     }
 
-    let dimensions = &mut node.dimensions;
-    dimensions.width = px(width);
+    let d = &mut node.dimensions;
+    d.width = px(width);
 
-    dimensions.padding.left = px(padding_left);
-    dimensions.padding.right = px(padding_right);
+    d.padding.left = px(padding_left);
+    d.padding.right = px(padding_right);
 
-    dimensions.border.left = px(border_left);
-    dimensions.border.right = px(border_right);
+    d.border.left = px(border_left);
+    d.border.right = px(border_right);
 
-    dimensions.margin.left = px(margin_left);
-    dimensions.margin.right = px(margin_right);
+    d.margin.left = px(margin_left);
+    d.margin.right = px(margin_right);
+
+    d.x = containing_block.x + d.margin.left + d.border.left + d.padding.left;
 }
 
 /// Height of a block-level non-replaced element in normal flow with overflow visible.
@@ -156,6 +163,8 @@ fn calculate_height(node: &mut LayoutNode) {
     if margin_bottom == auto {
         margin_bottom = Length(0.0, Px);
     }
+
+    // TODO: Calculate child `y` coordinates.
 
     // If height is `auto` the used value depends on the element's children.
     if height == auto {
