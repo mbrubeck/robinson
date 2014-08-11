@@ -16,13 +16,13 @@ pub struct LayoutNode<'a> {
 
 #[deriving(Default, Show)]
 pub struct Dimensions {
-    // Content area:
-    pub width: f32,
-    pub height: f32,
-
     // Position of the content area relative to the document origin:
     pub x: f32,
     pub y: f32,
+
+    // Content area size:
+    pub width: f32,
+    pub height: f32,
 
     // Surrounding edges:
     pub padding: EdgeSizes,
@@ -40,21 +40,13 @@ pub fn layout<'a>(node: &'a style::StyledNode<'a>, containing_block: Dimensions)
         children: Vec::new(),
     };
 
-    // Width can depend on the width of the container, so we need to calculate this node's width
-    // before laying out its children.
+    // Child width can depend on parent width, so we need to calculate this node's width before
+    // laying out its children.
     calculate_width(&mut layout_node, containing_block);
 
-    // Lay out the children.
-    for child in node.children.iter() {
-        // Don't lay out nodes with `display: none;`.
-        if child.display() != style::None {
-            layout_node.children.push(layout(child, layout_node.dimensions));
-        }
-    }
-
-    // Height can depend on the height of the contents, so we need wait until after the children are
-    // laid out before calculating the parent's height.
-    calculate_height(&mut layout_node);
+    // Parent height can depend on child height, so `calculate_height` will recursively lay out the
+    // children before it finishes.
+    calculate_height(&mut layout_node, containing_block);
 
     layout_node
 }
@@ -145,12 +137,12 @@ fn calculate_width(node: &mut LayoutNode, containing_block: Dimensions) {
 /// Height of a block-level non-replaced element in normal flow with overflow visible.
 ///
 /// http://www.w3.org/TR/CSS2/visudet.html#normal-block
-fn calculate_height(node: &mut LayoutNode) {
+fn calculate_height(node: &mut LayoutNode, containing_block: Dimensions) {
     let style = node.style_node;
 
     // `height` has initial value `auto`.
     let auto = Keyword("auto".to_string());
-    let mut height = style.value("height").unwrap_or(auto.clone());
+    let height = style.value("height").unwrap_or(auto.clone());
 
     // margin, border, and padding have initial value 0.
     let zero = Length(0.0, Px);
@@ -172,26 +164,39 @@ fn calculate_height(node: &mut LayoutNode) {
         margin_bottom = Length(0.0, Px);
     }
 
-    // TODO: Calculate child `y` coordinates.
+    let d = &mut node.dimensions;
 
-    // If height is `auto` the used value depends on the element's children.
-    if height == auto {
-        // TODO: margin collapsing
-        let content_height = node.children.iter().map(total_height).sum();
-        height = Length(content_height, Px);
+    d.padding.top = px(padding_top);
+    d.padding.bottom = px(padding_bottom);
+
+    d.border.top = px(border_top);
+    d.border.bottom = px(border_bottom);
+
+    d.margin.top = px(margin_top);
+    d.margin.bottom = px(margin_bottom);
+
+    d.y = containing_block.y + d.margin.top + d.border.top + d.padding.top;
+
+    // Lay out the children.
+    let mut content_height = 0.0;
+    for child_style in node.style_node.children.iter() {
+        // Skip nodes with `display` set to `None`.
+        if child_style.display() != style::None {
+            let mut child_layout = layout(child_style, *d);
+
+            // Position each child below the previous one. TODO: margin collapsing
+            child_layout.dimensions.y = d.y + content_height;
+            content_height = content_height + child_layout.dimensions.total_height();
+
+            node.children.push(child_layout);
+        }
     }
 
-    let dimensions = &mut node.dimensions;
-    dimensions.height = px(height);
-
-    dimensions.padding.top = px(padding_top);
-    dimensions.padding.bottom = px(padding_bottom);
-
-    dimensions.border.top = px(border_top);
-    dimensions.border.bottom = px(border_bottom);
-
-    dimensions.margin.top = px(margin_top);
-    dimensions.margin.bottom = px(margin_bottom);
+    // If height is `auto` the used value depends on the element's children.
+    d.height = match height {
+        Length(h, Px) => h,
+        _ => content_height
+    };
 }
 
 /// Add together all the non-`auto` lengths.
@@ -202,11 +207,12 @@ fn sum_lengths(values: &[&Value]) -> f32 {
     }).sum()
 }
 
-fn total_height(node: &LayoutNode) -> f32 {
-    let d = &node.dimensions;
-    d.height + d.padding.top + d.padding.bottom
-             + d.border.top + d.border.bottom
-             + d.margin.top + d.margin.bottom
+impl Dimensions {
+    fn total_height(&self) -> f32 {
+        self.height + self.padding.top + self.padding.bottom
+                    + self.border.top + self.border.bottom
+                    + self.margin.top + self.margin.bottom
+    }
 }
 
 /// Return the size of a Length in px.

@@ -35,10 +35,10 @@ fn main() {
 
     // Since we don't have an actual window, hard-code the "viewport" size.
     let initial_containing_block = layout::Dimensions {
-        width: 800.0,
-        height: 600.0,
         x: 0.0,
         y: 0.0,
+        width: 800.0,
+        height: 600.0,
         padding: Default::default(),
         border: Default::default(),
         margin: Default::default(),
