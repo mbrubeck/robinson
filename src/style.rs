@@ -15,6 +15,16 @@ pub struct StyledNode<'a> {
     pub children: Vec<StyledNode<'a>>,
 }
 
+impl<'a> StyledNode<'a> {
+    pub fn value(&self, name: &str) -> Option<Value> {
+        self.specified_values.find_equiv(&name).map(|v| v.clone())
+    }
+
+    pub fn lookup(&self, name: &str, fallback_name: &str, default: &Value) -> Value {
+        self.value(name).unwrap_or_else(|| self.value(fallback_name).unwrap_or_else(|| default.clone()))
+    }
+}
+
 /// Map from CSS property names to values.
 pub type PropertyMap =  HashMap<String, Value>;
 

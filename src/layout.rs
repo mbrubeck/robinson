@@ -51,25 +51,23 @@ pub fn layout<'a>(node: &'a StyledNode<'a>, containing_block: Dimensions) -> Lay
 ///
 /// http://www.w3.org/TR/CSS2/visudet.html#blockwidth
 fn calculate_width(node: &mut LayoutNode, containing_block: Dimensions) {
-    let specified_values = &node.style_node.specified_values;
-    let val = |name| specified_values.find_equiv(&name).map(|v| v.clone());
+    let style = node.style_node;
 
     // `width` has initial value `auto`.
     let auto = Keyword("auto".to_string());
-    let mut width = val("width").unwrap_or(auto.clone());
+    let mut width = style.value("width").unwrap_or(auto.clone());
 
     // margin, border, and padding have initial value 0.
-    let get_length = |name, fallback| {
-        val(name).unwrap_or_else(|| val(fallback).unwrap_or(Length(0.0, Px)))
-    };
-    let mut margin_left = get_length("margin-left", "margin");
-    let mut margin_right = get_length("margin-right", "margin");
+    let zero = Length(0.0, Px);
 
-    let border_left = get_length("border-left-width", "border-width");
-    let border_right = get_length("border-right-width", "border-width");
+    let mut margin_left = style.lookup("margin-left", "margin", &zero);
+    let mut margin_right = style.lookup("margin-right", "margin", &zero);
 
-    let padding_left = get_length("padding-left", "padding");
-    let padding_right = get_length("padding-right", "padding");
+    let border_left = style.lookup("border-left-width", "border-width", &zero);
+    let border_right = style.lookup("border-right-width", "border-width", &zero);
+
+    let padding_left = style.lookup("padding-left", "padding", &zero);
+    let padding_right = style.lookup("padding-right", "padding", &zero);
 
     let total_width = sum_lengths([&margin_left, &margin_right, &border_left, &border_right,
                                    &padding_left, &padding_right, &width]);
@@ -136,25 +134,23 @@ fn calculate_width(node: &mut LayoutNode, containing_block: Dimensions) {
 ///
 /// http://www.w3.org/TR/CSS2/visudet.html#normal-block
 fn calculate_height(node: &mut LayoutNode) {
-    let specified_values = &node.style_node.specified_values;
-    let val = |name| specified_values.find_equiv(&name).map(|v| v.clone());
+    let style = node.style_node;
 
     // `height` has initial value `auto`.
     let auto = Keyword("auto".to_string());
-    let mut height = val("height").unwrap_or(auto.clone());
+    let mut height = style.value("height").unwrap_or(auto.clone());
 
     // margin, border, and padding have initial value 0.
-    let get_length = |name, fallback| {
-        val(name).unwrap_or_else(|| val(fallback).unwrap_or(Length(0.0, Px)))
-    };
-    let mut margin_top = get_length("margin-top", "margin");
-    let mut margin_bottom = get_length("margin-bottom", "margin");
+    let zero = Length(0.0, Px);
 
-    let border_top = get_length("border-top-width", "border-width");
-    let border_bottom = get_length("border-bottom-width", "border-width");
+    let mut margin_top = style.lookup("margin-top", "margin", &zero);
+    let mut margin_bottom = style.lookup("margin-bottom", "margin", &zero);
 
-    let padding_top = get_length("padding-top", "padding");
-    let padding_bottom = get_length("padding-bottom", "padding");
+    let border_top = style.lookup("border-top-width", "border-width", &zero);
+    let border_bottom = style.lookup("border-bottom-width", "border-width", &zero);
+
+    let padding_top = style.lookup("padding-top", "padding", &zero);
+    let padding_bottom = style.lookup("padding-bottom", "padding", &zero);
 
     // If margin-top or margin-bottom is `auto`, the used value is 0.
     if margin_top == auto {
