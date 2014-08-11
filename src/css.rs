@@ -63,6 +63,16 @@ impl Selector {
     }
 }
 
+impl Value {
+    /// Return the size of a length in px, or zero for non-lengths.
+    pub fn to_px(&self) -> f32 {
+        match *self {
+            Length(f, Px) => f,
+            _ => 0.0
+        }
+    }
+}
+
 /// Parse a whole CSS stylesheet.
 pub fn parse(source: String) -> Stylesheet {
     let mut parser = Parser { pos: 0u, input: source };

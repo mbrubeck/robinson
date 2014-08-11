@@ -1,7 +1,7 @@
 ///! Basic CSS block layout.
 
 use style;
-use css::{Value, Keyword, Length, Px, Color};
+use css::{Keyword, Length, Px};
 use std::default::Default;
 use std::iter::AdditiveIterator; // for `sum`
 
@@ -73,11 +73,11 @@ fn calculate_width(node: &mut LayoutNode, containing_block: Dimensions) {
     let padding_left = style.lookup("padding-left", "padding", &zero);
     let padding_right = style.lookup("padding-right", "padding", &zero);
 
-    let total_width = sum_lengths([&margin_left, &margin_right, &border_left, &border_right,
-                                   &padding_left, &padding_right, &width]);
+    let total = [&margin_left, &margin_right, &border_left, &border_right,
+                 &padding_left, &padding_right, &width].iter().map(|v| v.to_px()).sum();
 
     // If width is not auto and the total is wider than the container, treat auto margins as 0.
-    if width != auto && total_width > containing_block.width {
+    if width != auto && total > containing_block.width {
         if margin_left == auto {
             margin_left = Length(0.0, Px);
         }
@@ -89,11 +89,11 @@ fn calculate_width(node: &mut LayoutNode, containing_block: Dimensions) {
     // Adjust used values so that the above sum equals `containing_block.width`.
     // Each arm of the `match` should increase the total width by exactly `underflow`,
     // and afterward all values should be absolute lengths in px.
-    let underflow = containing_block.width - total_width;
+    let underflow = containing_block.width - total;
     match (width == auto, margin_left == auto, margin_right == auto) {
         // If the values are overconstrained, calculate margin_right.
         (false, false, false) => {
-            margin_right = Length(px(margin_right) + underflow, Px);
+            margin_right = Length(margin_right.to_px() + underflow, Px);
         }
         // If exactly one value is auto, its used value follows from the equality.
         (false, false, true) => {
@@ -120,16 +120,16 @@ fn calculate_width(node: &mut LayoutNode, containing_block: Dimensions) {
     }
 
     let d = &mut node.dimensions;
-    d.width = px(width);
+    d.width = width.to_px();
 
-    d.padding.left = px(padding_left);
-    d.padding.right = px(padding_right);
+    d.padding.left = padding_left.to_px();
+    d.padding.right = padding_right.to_px();
 
-    d.border.left = px(border_left);
-    d.border.right = px(border_right);
+    d.border.left = border_left.to_px();
+    d.border.right = border_right.to_px();
 
-    d.margin.left = px(margin_left);
-    d.margin.right = px(margin_right);
+    d.margin.left = margin_left.to_px();
+    d.margin.right = margin_right.to_px();
 
     d.x = containing_block.x + d.margin.left + d.border.left + d.padding.left;
 }
@@ -145,35 +145,18 @@ fn calculate_height(node: &mut LayoutNode, containing_block: Dimensions) {
     let height = style.value("height").unwrap_or(auto.clone());
 
     // margin, border, and padding have initial value 0.
+    let d = &mut node.dimensions;
     let zero = Length(0.0, Px);
 
-    let mut margin_top = style.lookup("margin-top", "margin", &zero);
-    let mut margin_bottom = style.lookup("margin-bottom", "margin", &zero);
+    // If margin-top or margin-bottom is `auto`, the used value is zero.
+    d.margin.top = style.lookup("margin-top", "margin", &zero).to_px();
+    d.margin.bottom = style.lookup("margin-bottom", "margin", &zero).to_px();
 
-    let border_top = style.lookup("border-top-width", "border-width", &zero);
-    let border_bottom = style.lookup("border-bottom-width", "border-width", &zero);
+    d.border.top = style.lookup("border-top-width", "border-width", &zero).to_px();
+    d.border.bottom = style.lookup("border-bottom-width", "border-width", &zero).to_px();
 
-    let padding_top = style.lookup("padding-top", "padding", &zero);
-    let padding_bottom = style.lookup("padding-bottom", "padding", &zero);
-
-    // If margin-top or margin-bottom is `auto`, the used value is 0.
-    if margin_top == auto {
-        margin_top = Length(0.0, Px);
-    }
-    if margin_bottom == auto {
-        margin_bottom = Length(0.0, Px);
-    }
-
-    let d = &mut node.dimensions;
-
-    d.padding.top = px(padding_top);
-    d.padding.bottom = px(padding_bottom);
-
-    d.border.top = px(border_top);
-    d.border.bottom = px(border_bottom);
-
-    d.margin.top = px(margin_top);
-    d.margin.bottom = px(margin_bottom);
+    d.padding.top = style.lookup("padding-top", "padding", &zero).to_px();
+    d.padding.bottom = style.lookup("padding-bottom", "padding", &zero).to_px();
 
     d.y = containing_block.y + d.margin.top + d.border.top + d.padding.top;
 
@@ -186,7 +169,7 @@ fn calculate_height(node: &mut LayoutNode, containing_block: Dimensions) {
 
             // Position each child below the previous one. TODO: margin collapsing
             child_layout.dimensions.y = d.y + content_height;
-            content_height = content_height + child_layout.dimensions.total_height();
+            content_height = content_height + child_layout.dimensions.margin_box_height();
 
             node.children.push(child_layout);
         }
@@ -199,26 +182,10 @@ fn calculate_height(node: &mut LayoutNode, containing_block: Dimensions) {
     };
 }
 
-/// Add together all the non-`auto` lengths.
-fn sum_lengths(values: &[&Value]) -> f32 {
-    values.iter().map(|value| match **value {
-        Length(f, Px) => f,
-        _ => 0.0 // ignore 'auto' or invalid widths
-    }).sum()
-}
-
 impl Dimensions {
-    fn total_height(&self) -> f32 {
+    fn margin_box_height(&self) -> f32 {
         self.height + self.padding.top + self.padding.bottom
                     + self.border.top + self.border.bottom
                     + self.margin.top + self.margin.bottom
-    }
-}
-
-/// Return the size of a Length in px.
-fn px(value: Value) -> f32 {
-    match value {
-        Length(f, Px) => f,
-        Color(..) | Keyword(..) => fail!("not a length")
     }
 }
