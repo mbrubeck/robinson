@@ -2,12 +2,16 @@
   display: block;
 }
 
-div {
+html {
   width: 600px;
   padding: 10px;
   border-width: 1px;
   margin: auto;
   background: #0000cc;
+}
+
+head {
+  display: none;
 }
 
 .inner {

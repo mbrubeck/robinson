@@ -39,11 +39,24 @@ pub fn layout<'a>(node: &'a StyledNode<'a>, containing_block: Dimensions) -> Lay
         dimensions: Default::default(),
         children: Vec::new(),
     };
+
+    // Width can depend on the width of the container, so we need to calculate this node's width
+    // before laying out its children.
     calculate_width(&mut layout_node, containing_block);
+
+    // Lay out the children.
     for child in node.children.iter() {
-        layout_node.children.push(layout(child, layout_node.dimensions))
+        match child.value("display") {
+            // Don't lay out nodes with `display: none;`.
+            Some(Keyword(ref s)) if s.as_slice() == "none" => {},
+            _ => { layout_node.children.push(layout(child, layout_node.dimensions)); }
+        }
     }
+
+    // Height can depend on the height of the contents, so we need wait until after the children are
+    // laid out before calculating the parent's height.
     calculate_height(&mut layout_node);
+
     layout_node
 }
 

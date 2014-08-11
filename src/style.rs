@@ -8,7 +8,6 @@ use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector, Value};
 use std::collections::hashmap::HashMap;
 
 /// A node with associated style data.
-#[deriving(Show)]
 pub struct StyledNode<'a> {
     pub node: &'a Node,
     pub specified_values: PropertyMap,
