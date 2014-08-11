@@ -25,14 +25,19 @@ pub enum Display {
 }
 
 impl<'a> StyledNode<'a> {
+    /// Return the specified value of a property if it exists, otherwise `None`.
     pub fn value(&self, name: &str) -> Option<Value> {
         self.specified_values.find_equiv(&name).map(|v| v.clone())
     }
 
+    /// Return the specified value of property `name`, or property `fallback_name` if that doesn't
+    /// exist. or value `default` if neither does.
     pub fn lookup(&self, name: &str, fallback_name: &str, default: &Value) -> Value {
-        self.value(name).unwrap_or_else(|| self.value(fallback_name).unwrap_or_else(|| default.clone()))
+        self.value(name).unwrap_or_else(|| self.value(fallback_name)
+                        .unwrap_or_else(|| default.clone()))
     }
 
+    /// The value of the `display` property (defaults to `Block`).
     pub fn display(&self) -> Display {
         match self.value("display") {
             Some(Keyword(s)) => match s.as_slice() {
