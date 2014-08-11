@@ -1,13 +1,13 @@
 ///! Basic CSS block layout.
 
-use style::StyledNode;
+use style;
 use css::{Value, Keyword, Length, Px, Color};
 use std::default::Default;
 use std::iter::AdditiveIterator; // for `sum`
 
 /// A tree of nodes with associated layout data.
 pub struct LayoutNode<'a> {
-    pub style_node: &'a StyledNode<'a>,
+    pub style_node: &'a style::StyledNode<'a>,
     pub dimensions: Dimensions,
     pub children: Vec<LayoutNode<'a>>,
 }
@@ -33,7 +33,7 @@ pub struct Dimensions {
 #[deriving(Default, Show)]
 struct EdgeSizes { left: f32, right: f32, top: f32, bottom: f32 }
 
-pub fn layout<'a>(node: &'a StyledNode<'a>, containing_block: Dimensions) -> LayoutNode<'a> {
+pub fn layout<'a>(node: &'a style::StyledNode<'a>, containing_block: Dimensions) -> LayoutNode<'a> {
     let mut layout_node = LayoutNode {
         style_node: node,
         dimensions: Default::default(),
@@ -46,10 +46,9 @@ pub fn layout<'a>(node: &'a StyledNode<'a>, containing_block: Dimensions) -> Lay
 
     // Lay out the children.
     for child in node.children.iter() {
-        match child.value("display") {
-            // Don't lay out nodes with `display: none;`.
-            Some(Keyword(ref s)) if s.as_slice() == "none" => {},
-            _ => { layout_node.children.push(layout(child, layout_node.dimensions)); }
+        // Don't lay out nodes with `display: none;`.
+        if child.display() != style::None {
+            layout_node.children.push(layout(child, layout_node.dimensions));
         }
     }
 

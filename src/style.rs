@@ -4,14 +4,24 @@
 //! complicated if I add support for compound selectors.
 
 use dom::{Node, Element, ElementData};
-use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector, Value};
+use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector, Value, Keyword};
 use std::collections::hashmap::HashMap;
+
+/// Map from CSS property names to values.
+pub type PropertyMap =  HashMap<String, Value>;
 
 /// A node with associated style data.
 pub struct StyledNode<'a> {
     pub node: &'a Node,
     pub specified_values: PropertyMap,
     pub children: Vec<StyledNode<'a>>,
+}
+
+#[deriving(PartialEq)]
+pub enum Display {
+    Inline,
+    Block,
+    None,
 }
 
 impl<'a> StyledNode<'a> {
@@ -22,10 +32,18 @@ impl<'a> StyledNode<'a> {
     pub fn lookup(&self, name: &str, fallback_name: &str, default: &Value) -> Value {
         self.value(name).unwrap_or_else(|| self.value(fallback_name).unwrap_or_else(|| default.clone()))
     }
-}
 
-/// Map from CSS property names to values.
-pub type PropertyMap =  HashMap<String, Value>;
+    pub fn display(&self) -> Display {
+        match self.value("display") {
+            Some(Keyword(s)) => match s.as_slice() {
+                "inline" => Inline,
+                "none" => None,
+                _ => Block
+            },
+            _ => Block
+        }
+    }
+}
 
 /// Apply a stylesheet to an entire DOM tree, returning a StyledNode tree.
 ///
