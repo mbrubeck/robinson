@@ -30,10 +30,11 @@ Currently implemented:
 * Parse a small subset of HTML and build a DOM tree.
 * Parse a small subset of CSS.
 * Perform selector matching to apply styles to elements.
+* Basic block layout.
 
 Coming soon, I hope:
 
-* Basic block and inline layout.
+* Inline layout.
 * Paint text and boxes.
 * Load resources from network or filesystem.
 
