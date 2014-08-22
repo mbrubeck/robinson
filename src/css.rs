@@ -111,7 +111,7 @@ impl Parser {
             selectors.push(Simple(self.parse_simple_selector()));
             self.consume_whitespace();
             match self.next_char() {
-                ',' => { self.consume_char(); }
+                ',' => { self.consume_char(); self.consume_whitespace(); }
                 '{' => break,
                 c   => fail!("Unexpected character {} in selector list", c)
             }
