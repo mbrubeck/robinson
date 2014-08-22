@@ -4,7 +4,7 @@
 //! complicated if I add support for compound selectors.
 
 use dom::{Node, Element, ElementData};
-use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector, Value, Keyword};
+use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector, Value, Keyword, Specificity};
 use std::collections::hashmap::HashMap;
 
 /// Map from CSS property names to values.
@@ -73,7 +73,7 @@ fn specified_values(elem: &ElementData, stylesheet: &Stylesheet) -> PropertyMap 
     let mut rules = matching_rules(elem, stylesheet);
 
     // Go through the rules from lowest to highest specificity.
-    rules.sort_by(|&(a, _), &(b, _)| a.specificity().cmp(&b.specificity()));
+    rules.sort_by(|&(a, _), &(b, _)| a.cmp(&b));
     for &(_, rule) in rules.iter() {
         for declaration in rule.declarations.iter() {
             values.insert(declaration.name.clone(), declaration.value.clone());
@@ -83,7 +83,7 @@ fn specified_values(elem: &ElementData, stylesheet: &Stylesheet) -> PropertyMap 
 }
 
 /// A single CSS rule and the highest-specificity selector that resulted in a given match.
-type MatchedRule<'a> = (&'a Selector, &'a Rule);
+type MatchedRule<'a> = (Specificity, &'a Rule);
 
 /// Find all CSS rules that match the given element.
 fn matching_rules<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> Vec<MatchedRule<'a>> {
@@ -94,7 +94,7 @@ fn matching_rules<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> Vec<Mat
         .filter_map(|rule| {
             // Find the first (highest-specificity) matching selector.
             rule.selectors.iter().find(|selector| matches(elem, *selector))
-                .map(|selector| (selector, rule))
+                .map(|selector| (selector.specificity(), rule))
         }).collect()
 }
 
