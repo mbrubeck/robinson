@@ -112,10 +112,7 @@ fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> boo
     }
 
     // Check ID selector
-    if selector.id.iter().any(|id| {
-        elem.id().iter().any(|elem_id| {
-            *elem_id != id
-    })}) {
+    if selector.id.iter().any(|id| elem.id() != Some(id)) {
         return false;
     }
 
