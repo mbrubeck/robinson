@@ -53,8 +53,9 @@ impl ElementData {
     }
 
     pub fn classes<'a>(&'a self) -> HashSet<&'a str> {
-        self.get_attribute("class").iter().flat_map(|classlist| {
-            classlist.as_slice().split(' ')
-        }).collect()
+        match self.get_attribute("class") {
+            Some(classlist) => classlist.as_slice().split(' ').collect(),
+            None => HashSet::new()
+        }
     }
 }
