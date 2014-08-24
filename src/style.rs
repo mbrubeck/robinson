@@ -3,7 +3,7 @@
 //! This is not very interesting at the moment.  It will get much more
 //! complicated if I add support for compound selectors.
 
-use dom::{Node, Element, ElementData};
+use dom::{Node, Element, ElementData, Text};
 use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector, Value, Keyword, Specificity};
 use std::collections::hashmap::HashMap;
 
@@ -59,7 +59,7 @@ pub fn style_tree<'a>(root: &'a Node, stylesheet: &'a Stylesheet) -> StyledNode<
         node: root,
         specified_values: match root.node_type {
             Element(ref elem) => specified_values(elem, stylesheet),
-            _ => HashMap::new(),
+            Text(_) => HashMap::new()
         },
         children: root.children.iter().map(|child| style_tree(child, stylesheet)).collect(),
     }
@@ -79,7 +79,7 @@ fn specified_values(elem: &ElementData, stylesheet: &Stylesheet) -> PropertyMap 
             values.insert(declaration.name.clone(), declaration.value.clone());
         }
     }
-    values
+    return values;
 }
 
 /// A single CSS rule and the specificity of its most specific matching selector.
@@ -93,8 +93,9 @@ fn matching_rules<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> Vec<Mat
     stylesheet.rules.iter().filter_map(|rule| match_rule(elem, rule)).collect()
 }
 
+/// If `rule` matches `elem`, return a `MatchedRule`. Otherwise return `None`.
 fn match_rule<'a>(elem: &ElementData, rule: &'a Rule) -> Option<MatchedRule<'a>> {
-    // Find the first (highest-specificity) matching selector.
+    // Find the first (most specific) matching selector.
     rule.selectors.iter().find(|selector| matches(elem, *selector))
         .map(|selector| (selector.specificity(), rule))
 }
