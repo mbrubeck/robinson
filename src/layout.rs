@@ -46,10 +46,10 @@ impl<'a> LayoutBox<'a> {
         }
     }
 
-    fn style(&self) -> &'a StyledNode<'a> {
+    fn style_node(&self) -> &'a StyledNode<'a> {
         match self.box_type {
-            BlockNode(style) => style,
-            InlineNode(style) => style,
+            BlockNode(style_node) => style_node,
+            InlineNode(style_node) => style_node,
             InlineContainer => fail!("Inline container has no style node")
         }
     }
@@ -110,7 +110,7 @@ impl<'a> LayoutBox<'a> {
     ///
     /// http://www.w3.org/TR/CSS2/visudet.html#blockwidth
     fn calculate_block_width(&mut self, containing_block: Dimensions) {
-        let style = self.style();
+        let style = self.style_node();
 
         // `width` has initial value `auto`.
         let auto = Keyword("auto".to_string());
@@ -194,7 +194,7 @@ impl<'a> LayoutBox<'a> {
     /// http://www.w3.org/TR/CSS2/visudet.html#normal-block
     fn layout_block_content(&mut self, containing_block: Dimensions) {
         // First we need to find the position of the content area...
-        let style = self.style();
+        let style = self.style_node();
         let d = &mut self.dimensions;
 
         // margin, border, and padding have initial value 0.
@@ -227,7 +227,7 @@ impl<'a> LayoutBox<'a> {
 
     /// Height of a block-level non-replaced element in normal flow with overflow visible.
     fn calculate_block_height(&mut self) {
-        match self.style().value("height") {
+        match self.style_node().value("height") {
             // If `height` is an absolute length, use it instead of the content height.
             Some(Length(h, Px)) => { self.dimensions.height = h; }
             _ => {}
