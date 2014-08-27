@@ -102,11 +102,11 @@ impl<'a> LayoutBox<'a> {
         self.calculate_block_width(containing_block);
 
         // Recursively lay out the children of this node within its content area.
-        self.layout_block_content(containing_block);
+        let content_height = self.layout_block_content(containing_block);
 
         // Parent height can depend on child height, so `calculate_height` must be called after the
         // content layout is finished.
-        self.calculate_block_height();
+        self.calculate_block_height(content_height);
     }
 
     /// Calculate the width of a block-level non-replaced element in normal flow.
@@ -192,10 +192,10 @@ impl<'a> LayoutBox<'a> {
         d.x = containing_block.x + d.margin.left + d.border.left + d.padding.left;
     }
 
-    /// Lay out the node's children within its content area.
+    /// Lay out the node's children within its content area and return the content height.
     ///
     /// http://www.w3.org/TR/CSS2/visudet.html#normal-block
-    fn layout_block_content(&mut self, containing_block: Dimensions) {
+    fn layout_block_content(&mut self, containing_block: Dimensions) -> f32 {
         // First we need to find the position of the content area...
         let style = self.style_node();
         let d = &mut self.dimensions;
@@ -224,17 +224,16 @@ impl<'a> LayoutBox<'a> {
             child.dimensions.y = d.y + content_height;
             content_height = content_height + child.dimensions.margin_box_height();
         }
-        // Record the total height of the children.
-        d.height = content_height;
+        return content_height;
     }
 
     /// Height of a block-level non-replaced element in normal flow with overflow visible.
-    fn calculate_block_height(&mut self) {
-        match self.style_node().value("height") {
-            // If `height` is an absolute length, use it instead of the content height.
-            Some(Length(h, Px)) => { self.dimensions.height = h; }
-            _ => {}
-        }
+    fn calculate_block_height(&mut self, content_height: f32) {
+        let height = self.style_node().value("height");
+        self.dimensions.height = match height {
+            Some(Length(h, Px)) => h,
+            _ => content_height // In the default (`auto`) case, use the content height.
+        };
     }
 
     /// Add an inline-level child.
