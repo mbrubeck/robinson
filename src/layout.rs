@@ -44,11 +44,14 @@ pub fn layout<'a>(node: &'a style::StyledNode<'a>, containing_block: Dimensions)
     // laying out its children.
     calculate_width(&mut layout_node, containing_block);
 
-    // Parent height can depend on child height, so `calculate_height` will recursively lay out the
-    // children before it finishes.
-    calculate_height(&mut layout_node, containing_block);
+    // Recursively lay out the children of this node within its content area.
+    layout_content(&mut layout_node, containing_block);
 
-    layout_node
+    // Parent height can depend on child height, so `calculate_height` must be called after the
+    // content layout is finished.
+    calculate_height(&mut layout_node);
+
+    return layout_node;
 }
 
 /// Calculate the width of a block-level non-replaced element in normal flow.
@@ -134,18 +137,13 @@ fn calculate_width(node: &mut LayoutNode, containing_block: Dimensions) {
     d.x = containing_block.x + d.margin.left + d.border.left + d.padding.left;
 }
 
-/// Height of a block-level non-replaced element in normal flow with overflow visible.
-///
-/// http://www.w3.org/TR/CSS2/visudet.html#normal-block
-fn calculate_height(node: &mut LayoutNode, containing_block: Dimensions) {
+/// Lay out the node's children within its content area.
+fn layout_content(node: &mut LayoutNode, containing_block: Dimensions) {
+    // First we need to find the position of the content area...
     let style = node.style_node;
-
-    // `height` has initial value `auto`.
-    let auto = Keyword("auto".to_string());
-    let height = style.value("height").unwrap_or(auto.clone());
+    let d = &mut node.dimensions;
 
     // margin, border, and padding have initial value 0.
-    let d = &mut node.dimensions;
     let zero = Length(0.0, Px);
 
     // If margin-top or margin-bottom is `auto`, the used value is zero.
@@ -160,7 +158,7 @@ fn calculate_height(node: &mut LayoutNode, containing_block: Dimensions) {
 
     d.y = containing_block.y + d.margin.top + d.border.top + d.padding.top;
 
-    // Lay out the children.
+    // Now we can lay out the children within the content area.
     let mut content_height = 0.0;
     for child_style in node.style_node.children.iter() {
         // Skip nodes with `display` set to `None`.
@@ -174,15 +172,23 @@ fn calculate_height(node: &mut LayoutNode, containing_block: Dimensions) {
             node.children.push(child_layout);
         }
     }
+    // Record the total height of the children.
+    d.height = content_height;
+}
 
-    // If height is `auto` the used value depends on the element's children.
-    d.height = match height {
-        Length(h, Px) => h,
-        _ => content_height
-    };
+/// Height of a block-level non-replaced element in normal flow with overflow visible.
+///
+/// http://www.w3.org/TR/CSS2/visudet.html#normal-block
+fn calculate_height(node: &mut LayoutNode) {
+    // If the height is an absolute length, it overrides the content height.
+    match node.style_node.value("height") {
+        Some(Length(h, Px)) => { node.dimensions.height = h; }
+        _ => {}
+    }
 }
 
 impl Dimensions {
+    /// Total height of a box including its margins, border, and padding.
     fn margin_box_height(&self) -> f32 {
         self.height + self.padding.top + self.padding.bottom
                     + self.border.top + self.border.bottom
