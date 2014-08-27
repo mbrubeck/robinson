@@ -48,7 +48,7 @@ fn main() {
     let root_node = html::parse(html);
     let stylesheet = css::parse(css);
     let style_root = style::style_tree(&root_node, &stylesheet);
-    let layout_root = layout::layout(&style_root, initial_containing_block);
+    let layout_root = layout::layout_tree(&style_root, initial_containing_block);
 
     // Debug output:
     println!("{}", layout_root.dimensions);
