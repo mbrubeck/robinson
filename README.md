@@ -22,6 +22,11 @@ personally want to learn how to do it. If I succeed, I also hope that other
 people can learn from my code by reading or modifying it, or learn from my
 experience as they set out to build their own toy browser engines.
 
+For more details see [Let's build a browser engine!][blog], a series of
+how-to articles based on this project.
+
+[blog]: http://limpet.net/mbrubeck/2014/08/08/toy-layout-engine-1.html
+
 Status
 ------
 
