@@ -41,7 +41,7 @@ impl Parser {
             }
             nodes.push(self.parse_node());
         }
-        nodes
+        return nodes;
     }
 
     /// Parse a single node.
@@ -69,7 +69,7 @@ impl Parser {
         assert!(self.parse_tag_name() == tag_name);
         assert!(self.consume_char() == '>');
 
-        dom::elem(tag_name, attrs, children)
+        return dom::elem(tag_name, attrs, children);
     }
 
     /// Parse a tag or attribute name.
@@ -91,7 +91,7 @@ impl Parser {
             let (name, value) = self.parse_attr();
             attributes.insert(name, value);
         }
-        attributes
+        return attributes;
     }
 
     /// Parse a single name="value" pair.
@@ -99,7 +99,7 @@ impl Parser {
         let name = self.parse_tag_name();
         assert!(self.consume_char() == '=');
         let value = self.parse_attr_value();
-        (name, value)
+        return (name, value);
     }
 
     /// Parse a quoted value.
@@ -108,7 +108,7 @@ impl Parser {
         assert!(open_quote == '"' || open_quote == '\'');
         let value = self.consume_while(|c| c != open_quote);
         assert!(self.consume_char() == open_quote);
-        value
+        return value;
     }
 
     /// Parse a text node.
@@ -127,14 +127,14 @@ impl Parser {
         while !self.eof() && test(self.next_char()) {
             result.push_char(self.consume_char());
         }
-        result
+        return result;
     }
 
     /// Return the current character, and advance self.pos to the next character.
     fn consume_char(&mut self) -> char {
         let range = self.input.as_slice().char_range_at(self.pos);
         self.pos = range.next;
-        range.ch
+        return range.ch;
     }
 
     /// Read the current character without consuming it.

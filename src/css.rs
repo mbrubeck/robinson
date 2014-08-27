@@ -93,7 +93,7 @@ impl Parser {
             if self.eof() { break }
             rules.push(self.parse_rule());
         }
-        rules
+        return rules;
     }
 
     /// Parse a rule set: `<selectors> { <declarations> }`.
@@ -118,33 +118,33 @@ impl Parser {
         }
         // Return selectors with highest specificity first, for use in matching.
         selectors.sort_by(|a,b| b.specificity().cmp(&a.specificity()));
-        selectors
+        return selectors;
     }
 
     /// Parse one simple selector, e.g.: `type#id.class1.class2.class3`
     fn parse_simple_selector(&mut self) -> SimpleSelector {
-        let mut result = SimpleSelector { tag_name: None, id: None, class: Vec::new() };
+        let mut selector = SimpleSelector { tag_name: None, id: None, class: Vec::new() };
         while !self.eof() {
             match self.next_char() {
                 '#' => {
                     self.consume_char();
-                    result.id = Some(self.parse_identifier());
+                    selector.id = Some(self.parse_identifier());
                 }
                 '.' => {
                     self.consume_char();
-                    result.class.push(self.parse_identifier());
+                    selector.class.push(self.parse_identifier());
                 }
                 '*' => {
                     // universal selector
                     self.consume_char();
                 }
                 c if valid_identifier_char(c) => {
-                    result.tag_name = Some(self.parse_identifier());
+                    selector.tag_name = Some(self.parse_identifier());
                 }
                 _ => break
             }
         }
-        result
+        return selector;
     }
 
     /// Parse a list of declarations enclosed in `{ ... }`.
@@ -159,7 +159,7 @@ impl Parser {
             }
             declarations.push(self.parse_declaration());
         }
-        declarations
+        return declarations;
     }
 
     /// Parse one `<property>: <value>;` declaration.
@@ -236,14 +236,14 @@ impl Parser {
         while !self.eof() && test(self.next_char()) {
             result.push_char(self.consume_char());
         }
-        result
+        return result;
     }
 
     /// Return the current character, and advance self.pos to the next character.
     fn consume_char(&mut self) -> char {
         let range = self.input.as_slice().char_range_at(self.pos);
         self.pos = range.next;
-        range.ch
+        return range.ch;
     }
 
     /// Read the current character without consuming it.
