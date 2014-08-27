@@ -66,16 +66,18 @@ pub fn layout_tree<'a>(node: &'a StyledNode<'a>, containing_block: Dimensions) -
 }
 
 /// Build the tree of LayoutBoxes, but don't perform any layout calculations yet.
-fn build_layout_tree<'a>(node: &'a StyledNode<'a>) -> LayoutBox<'a> {
-    let mut root = LayoutBox::new(match node.display() {
-        style::Block => BlockNode(node),
-        style::Inline => InlineNode(node),
+fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
+    // Create the root box.
+    let mut root = LayoutBox::new(match style_node.display() {
+        style::Block => BlockNode(style_node),
+        style::Inline => InlineNode(style_node),
         style::None => fail!("Root node has display: none.")
     });
 
-    for child in node.children.iter() {
+    // Create the descendant boxes.
+    for child in style_node.children.iter() {
         match child.display() {
-            style::Block => root.push_block(build_layout_tree(child)),
+            style::Block => root.children.push(build_layout_tree(child)),
             style::Inline => root.push_inline(build_layout_tree(child)),
             style::None => {} // Don't lay out nodes with `display: none;`
         }
@@ -85,10 +87,11 @@ fn build_layout_tree<'a>(node: &'a StyledNode<'a>) -> LayoutBox<'a> {
 
 impl<'a> LayoutBox<'a> {
     /// Lay out a single box and its descendants.
-    pub fn layout(&mut self, containing_block: Dimensions) {
+    fn layout(&mut self, containing_block: Dimensions) {
         match self.box_type {
             BlockNode(_) => self.layout_block(containing_block),
-            _ => {} // TODO
+            InlineNode(_) => {} // TODO
+            InlineContainer => {} // TODO
         }
     }
 
@@ -234,12 +237,25 @@ impl<'a> LayoutBox<'a> {
         }
     }
 
-    fn push_block(&mut self, child: LayoutBox<'a>) {
-        self.children.push(child)
+    /// Add an inline-level child.
+    fn push_inline(&mut self, child: LayoutBox<'a>) {
+        self.container_for_inline().children.push(child);
     }
 
-    fn push_inline(&mut self, _child: LayoutBox<'a>) {
-       // TODO
+    /// Where a new inline child should go.
+    fn container_for_inline(&mut self) -> &mut LayoutBox<'a> {
+        match self.box_type {
+            InlineNode(_) | InlineContainer => self,
+            BlockNode(_) => {
+                // If we're in the middle of a series of inline nodes, keep using the existing
+                // container.  Otherwise, create a new inline container.
+                match self.children.last() {
+                    Some(&LayoutBox { box_type: InlineContainer,..}) => {}
+                    _ => self.children.push(LayoutBox::new(InlineContainer))
+                }
+                self.children.mut_last().unwrap()
+            }
+        }
     }
 }
 
