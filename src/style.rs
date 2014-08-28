@@ -21,7 +21,7 @@ pub struct StyledNode<'a> {
 pub enum Display {
     Inline,
     Block,
-    None,
+    DisplayNone,
 }
 
 impl<'a> StyledNode<'a> {
@@ -42,7 +42,7 @@ impl<'a> StyledNode<'a> {
         match self.value("display") {
             Some(Keyword(s)) => match s.as_slice() {
                 "block" => Block,
-                "none" => None,
+                "none" => DisplayNone,
                 _ => Inline
             },
             _ => Inline

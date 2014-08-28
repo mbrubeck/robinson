@@ -1,7 +1,6 @@
 ///! Basic CSS block layout.
 
-use style;
-use style::StyledNode;
+use style::{StyledNode, Inline, Block, DisplayNone};
 use css::{Keyword, Length, Px};
 use std::default::Default;
 use std::iter::AdditiveIterator; // for `sum`
@@ -69,17 +68,17 @@ pub fn layout_tree<'a>(node: &'a StyledNode<'a>, containing_block: Dimensions) -
 fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
     // Create the root box.
     let mut root = LayoutBox::new(match style_node.display() {
-        style::Block => BlockNode(style_node),
-        style::Inline => InlineNode(style_node),
-        style::None => fail!("Root node has display: none.")
+        Block => BlockNode(style_node),
+        Inline => InlineNode(style_node),
+        DisplayNone => fail!("Root node has display: none.")
     });
 
     // Create the descendant boxes.
     for child in style_node.children.iter() {
         match child.display() {
-            style::Block => root.children.push(build_layout_tree(child)),
-            style::Inline => root.push_inline(build_layout_tree(child)),
-            style::None => {} // Don't lay out nodes with `display: none;`
+            Block => root.children.push(build_layout_tree(child)),
+            Inline => root.push_inline(build_layout_tree(child)),
+            DisplayNone => {} // Don't lay out nodes with `display: none;`
         }
     }
     return root;
