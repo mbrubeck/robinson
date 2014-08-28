@@ -77,7 +77,7 @@ fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
     for child in style_node.children.iter() {
         match child.display() {
             Block => root.children.push(build_layout_tree(child)),
-            Inline => root.push_inline(build_layout_tree(child)),
+            Inline => root.get_inline_container().children.push(build_layout_tree(child)),
             DisplayNone => {} // Don't lay out nodes with `display: none;`
         }
     }
@@ -235,13 +235,8 @@ impl<'a> LayoutBox<'a> {
         };
     }
 
-    /// Add an inline-level child.
-    fn push_inline(&mut self, child: LayoutBox<'a>) {
-        self.container_for_inline().children.push(child);
-    }
-
     /// Where a new inline child should go.
-    fn container_for_inline(&mut self) -> &mut LayoutBox<'a> {
+    fn get_inline_container(&mut self) -> &mut LayoutBox<'a> {
         match self.box_type {
             InlineNode(_) | InlineContainer => self,
             BlockNode(_) => {
