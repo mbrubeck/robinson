@@ -23,6 +23,9 @@ pub struct Dimensions {
     pub margin: EdgeSizes,
 }
 
+#[deriving(Default, Show)]
+struct EdgeSizes { left: f32, right: f32, top: f32, bottom: f32 }
+
 /// A node in the layout tree.
 pub struct LayoutBox<'a> {
     pub box_type: BoxType<'a>,
@@ -53,9 +56,6 @@ impl<'a> LayoutBox<'a> {
         }
     }
 }
-
-#[deriving(Default, Show)]
-struct EdgeSizes { left: f32, right: f32, top: f32, bottom: f32 }
 
 /// Transform a style tree into a layout tree.
 pub fn layout_tree<'a>(node: &'a StyledNode<'a>, containing_block: Dimensions) -> LayoutBox<'a> {
