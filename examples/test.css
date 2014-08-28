@@ -2,6 +2,10 @@
   display: block;
 }
 
+span {
+  display: inline;
+}
+
 html {
   width: 600px;
   padding: 10px;

@@ -48,8 +48,8 @@ impl<'a> LayoutBox<'a> {
 
     fn get_style_node(&self) -> &'a StyledNode<'a> {
         match self.box_type {
-            BlockNode(style_node) => style_node,
-            InlineNode(style_node) => style_node,
+            BlockNode(node) => node,
+            InlineNode(node) => node,
             InlineContainer => fail!("Inline container has no style node")
         }
     }

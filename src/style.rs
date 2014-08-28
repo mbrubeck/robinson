@@ -37,15 +37,15 @@ impl<'a> StyledNode<'a> {
                         .unwrap_or_else(|| default.clone()))
     }
 
-    /// The value of the `display` property (defaults to `Block`).
+    /// The value of the `display` property (defaults to inline).
     pub fn display(&self) -> Display {
         match self.value("display") {
             Some(Keyword(s)) => match s.as_slice() {
-                "inline" => Inline,
+                "block" => Block,
                 "none" => None,
-                _ => Block
+                _ => Inline
             },
-            _ => Block
+            _ => Inline
         }
     }
 }
