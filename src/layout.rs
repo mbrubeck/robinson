@@ -9,7 +9,7 @@ use std::iter::AdditiveIterator; // for `sum`
 
 #[deriving(Default, Show)]
 pub struct Dimensions {
-    // Position of the content area relative to the document origin:
+    // Top left corner of the content area, relative to the document origin:
     pub x: f32,
     pub y: f32,
 
@@ -24,19 +24,24 @@ pub struct Dimensions {
 }
 
 #[deriving(Default, Show)]
-struct EdgeSizes { left: f32, right: f32, top: f32, bottom: f32 }
+pub struct EdgeSizes {
+    pub left: f32,
+    pub right: f32,
+    pub top: f32,
+    pub bottom: f32,
+}
 
 /// A node in the layout tree.
 pub struct LayoutBox<'a> {
-    pub box_type: BoxType<'a>,
     pub dimensions: Dimensions,
+    pub box_type: BoxType<'a>,
     pub children: Vec<LayoutBox<'a>>,
 }
 
 pub enum BoxType<'a> {
     BlockNode(&'a StyledNode<'a>),
     InlineNode(&'a StyledNode<'a>),
-    InlineContainer,
+    AnonymousBlock,
 }
 
 impl<'a> LayoutBox<'a> {
@@ -52,7 +57,7 @@ impl<'a> LayoutBox<'a> {
         match self.box_type {
             BlockNode(node) => node,
             InlineNode(node) => node,
-            InlineContainer => fail!("Inline container has no style node")
+            AnonymousBlock => fail!("Anonymous block box has no style node")
         }
     }
 }
@@ -90,7 +95,7 @@ impl<'a> LayoutBox<'a> {
         match self.box_type {
             BlockNode(_) => self.layout_block(containing_block),
             InlineNode(_) => {} // TODO
-            InlineContainer => {} // TODO
+            AnonymousBlock => {} // TODO
         }
     }
 
@@ -238,13 +243,13 @@ impl<'a> LayoutBox<'a> {
     /// Where a new inline child should go.
     fn get_inline_container(&mut self) -> &mut LayoutBox<'a> {
         match self.box_type {
-            InlineNode(_) | InlineContainer => self,
+            InlineNode(_) | AnonymousBlock => self,
             BlockNode(_) => {
-                // If we're in the middle of a series of inline nodes, keep using the existing
-                // container.  Otherwise, create a new inline container.
+                // If we've just generated an anonymous block box, keep using it.
+                // Otherwise, create a new one.
                 match self.children.last() {
-                    Some(&LayoutBox { box_type: InlineContainer,..}) => {}
-                    _ => self.children.push(LayoutBox::new(InlineContainer))
+                    Some(&LayoutBox { box_type: AnonymousBlock,..}) => {}
+                    _ => self.children.push(LayoutBox::new(AnonymousBlock))
                 }
                 self.children.mut_last().unwrap()
             }
