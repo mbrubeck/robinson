@@ -46,8 +46,8 @@ Coming soon, I hope:
 Instructions
 ------------
 
-1. Install [Rust](http://www.rust-lang.org/) 0.11.0 or newer. (Nightly builds
-   are recommended.)
+1. Install [Rust](http://www.rust-lang.org/) 0.12.0-pre or newer. (Nightly
+   builds are recommended.)
 
 2. Clone the robinson source code from https://github.com/mbrubeck/robinson
 
