@@ -177,7 +177,15 @@ impl<'a> LayoutBox<'a> {
                 if margin_right == auto {
                     margin_right = Length(0.0, Px);
                 }
-                width = Length(underflow, Px);
+
+                if underflow >= 0.0 {
+                    // Expand width to fill the underflow.
+                    width = Length(underflow, Px);
+                } else {
+                    // Width can't be negative. Adjust the right margin instead.
+                    width = Length(0.0, Px);
+                    margin_right = Length(margin_right.to_px() + underflow, Px);
+                }
             }
             // If margin-left and margin-right are both auto, their used values are equal.
             (false, true, true) => {
