@@ -109,7 +109,7 @@ impl<'a> LayoutBox<'a> {
         self.calculate_block_position(containing_block);
 
         // Recursively lay out the children of this node within its content area.
-        self.layout_block_content();
+        self.layout_block_children();
 
         // Parent height can depend on child height, so `calculate_height` must be called after the
         // content layout is finished.
@@ -231,11 +231,11 @@ impl<'a> LayoutBox<'a> {
     /// Lay out the node's children within its content area and return the content height.
     ///
     /// Set `height` to the total content height.
-    fn layout_block_content(&mut self) {
-        // Now we can lay out the children within the content area.
+    fn layout_block_children(&mut self) {
         let d = &mut self.dimensions;
         for child in self.children.mut_iter() {
             child.layout(*d);
+            // Increment the height so each child is laid out below the previous one.
             d.height = d.height + child.dimensions.margin_box_height();
         }
     }
@@ -243,7 +243,7 @@ impl<'a> LayoutBox<'a> {
     /// Height of a block-level non-replaced element in normal flow with overflow visible.
     fn calculate_block_height(&mut self) {
         // If the height is set to an explicit length, use that exact length.
-        // Otherwise, just keep the value set by `layout_block_content`.
+        // Otherwise, just keep the value set by `layout_block_children`.
         match self.get_style_node().value("height") {
             Some(Length(h, Px)) => { self.dimensions.height = h; }
             _ => {}
