@@ -179,8 +179,8 @@ impl<'a> LayoutBox<'a> {
                 }
                 width = Length(underflow, Px);
             }
+            // If margin-left and margin-right are both auto, their used values are equal.
             (false, true, true) => {
-                // If margin-left and margin-right are both auto, their used values are equal.
                 margin_left = Length(underflow / 2.0, Px);
                 margin_right = Length(underflow / 2.0, Px);
             }
