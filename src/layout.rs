@@ -101,18 +101,18 @@ impl<'a> LayoutBox<'a> {
 
     /// Lay out a block-level element and its descendants.
     fn layout_block(&mut self, containing_block: Dimensions) {
-        // Child width can depend on parent width, so we need to calculate this node's width before
+        // Child width can depend on parent width, so we need to calculate this box's width before
         // laying out its children.
         self.calculate_block_width(containing_block);
 
-        // Determine where the block is located within its container.
+        // Determine where the box is located within its container.
         self.calculate_block_position(containing_block);
 
-        // Recursively lay out the children of this node within its content area.
+        // Recursively lay out the children of this box.
         self.layout_block_children();
 
         // Parent height can depend on child height, so `calculate_height` must be called after the
-        // content layout is finished.
+        // children are laid out.
         self.calculate_block_height();
     }
 
@@ -157,26 +157,21 @@ impl<'a> LayoutBox<'a> {
         // Each arm of the `match` should increase the total width by exactly `underflow`,
         // and afterward all values should be absolute lengths in px.
         let underflow = containing_block.width - total;
+
         match (width == auto, margin_left == auto, margin_right == auto) {
             // If the values are overconstrained, calculate margin_right.
             (false, false, false) => {
                 margin_right = Length(margin_right.to_px() + underflow, Px);
             }
-            // If exactly one value is auto, its used value follows from the equality.
-            (false, false, true) => {
-                margin_right = Length(underflow, Px);
-            }
-            (false, true, false) => {
-                margin_left = Length(underflow, Px);
-            }
+
+            // If exactly one size is auto, its used value follows from the equality.
+            (false, false, true) => { margin_right = Length(underflow, Px); }
+            (false, true, false) => { margin_left  = Length(underflow, Px); }
+
             // If width is set to auto, any other auto values become 0.
             (true, _, _) => {
-                if margin_left == auto {
-                    margin_left = Length(0.0, Px);
-                }
-                if margin_right == auto {
-                    margin_right = Length(0.0, Px);
-                }
+                if margin_left == auto { margin_left = Length(0.0, Px); }
+                if margin_right == auto { margin_right = Length(0.0, Px); }
 
                 if underflow >= 0.0 {
                     // Expand width to fill the underflow.
@@ -187,6 +182,7 @@ impl<'a> LayoutBox<'a> {
                     margin_right = Length(margin_right.to_px() + underflow, Px);
                 }
             }
+
             // If margin-left and margin-right are both auto, their used values are equal.
             (false, true, true) => {
                 margin_left = Length(underflow / 2.0, Px);
