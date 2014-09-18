@@ -236,9 +236,9 @@ impl<'a> LayoutBox<'a> {
               d.margin.top + d.border.top + d.padding.top;
     }
 
-    /// Lay out the node's children within its content area and return the content height.
+    /// Lay out the block's children within its content area.
     ///
-    /// Set `height` to the total content height.
+    /// Sets `self.dimensions.height` to the total content height.
     fn layout_block_children(&mut self) {
         let d = &mut self.dimensions;
         for child in self.children.mut_iter() {
