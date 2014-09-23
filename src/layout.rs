@@ -237,7 +237,7 @@ impl<'a> LayoutBox<'a> {
     /// Sets `self.dimensions.height` to the total content height.
     fn layout_block_children(&mut self) {
         let d = &mut self.dimensions;
-        for child in self.children.mut_iter() {
+        for child in self.children.iter_mut() {
             child.layout(*d);
             // Increment the height so each child is laid out below the previous one.
             d.height = d.height + child.dimensions.margin_box_height();
@@ -265,7 +265,7 @@ impl<'a> LayoutBox<'a> {
                     Some(&LayoutBox { box_type: AnonymousBlock,..}) => {}
                     _ => self.children.push(LayoutBox::new(AnonymousBlock))
                 }
-                self.children.mut_last().unwrap()
+                self.children.last_mut().unwrap()
             }
         }
     }
