@@ -234,7 +234,7 @@ impl Parser {
     fn consume_while(&mut self, test: |char| -> bool) -> String {
         let mut result = String::new();
         while !self.eof() && test(self.next_char()) {
-            result.push_char(self.consume_char());
+            result.push(self.consume_char());
         }
         return result;
     }
