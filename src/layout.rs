@@ -57,7 +57,7 @@ impl<'a> LayoutBox<'a> {
         match self.box_type {
             BlockNode(node) => node,
             InlineNode(node) => node,
-            AnonymousBlock => fail!("Anonymous block box has no style node")
+            AnonymousBlock => panic!("Anonymous block box has no style node")
         }
     }
 }
@@ -75,7 +75,7 @@ fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
     let mut root = LayoutBox::new(match style_node.display() {
         Block => BlockNode(style_node),
         Inline => InlineNode(style_node),
-        DisplayNone => fail!("Root node has display: none.")
+        DisplayNone => panic!("Root node has display: none.")
     });
 
     // Create the descendant boxes.

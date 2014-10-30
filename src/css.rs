@@ -3,7 +3,7 @@
 //! To support more CSS syntax, it would probably be easiest to replace this
 //! hand-rolled parser with one based on a library or parser generator.
 
-use std::ascii::OwnedStrAsciiExt; // for `into_ascii_lower`
+use std::ascii::OwnedAsciiExt; // for `into_ascii_lower`
 use std::from_str::FromStr;
 use std::num::FromStrRadix;
 
@@ -113,7 +113,7 @@ impl Parser {
             match self.next_char() {
                 ',' => { self.consume_char(); self.consume_whitespace(); }
                 '{' => break,
-                c   => fail!("Unexpected character {} in selector list", c)
+                c   => panic!("Unexpected character {} in selector list", c)
             }
         }
         // Return selectors with highest specificity first, for use in matching.
@@ -204,7 +204,7 @@ impl Parser {
     fn parse_unit(&mut self) -> Unit {
         match self.parse_identifier().into_ascii_lower().as_slice() {
             "px" => Px,
-            _ => fail!("unrecognized unit")
+            _ => panic!("unrecognized unit")
         }
     }
 
