@@ -8,15 +8,17 @@ use std::iter::AdditiveIterator; // for `sum`
 // CSS box model. All sizes are in px.
 
 #[deriving(Default, Show)]
-pub struct Dimensions {
-    // Top left corner of the content area, relative to the document origin:
+pub struct Rect {
     pub x: f32,
     pub y: f32,
-
-    // Content area size:
     pub width: f32,
     pub height: f32,
+}
 
+#[deriving(Default, Show)]
+pub struct Dimensions {
+    /// Position of the content area relative to the document origin:
+    pub content: Rect,
     // Surrounding edges:
     pub padding: EdgeSizes,
     pub border: EdgeSizes,
@@ -144,7 +146,7 @@ impl<'a> LayoutBox<'a> {
                      &padding_left, &padding_right, &width].iter().map(|v| v.to_px()).sum();
 
         // If width is not auto and the total is wider than the container, treat auto margins as 0.
-        if width != auto && total > containing_block.width {
+        if width != auto && total > containing_block.content.width {
             if margin_left == auto {
                 margin_left = Length(0.0, Px);
             }
@@ -156,7 +158,7 @@ impl<'a> LayoutBox<'a> {
         // Adjust used values so that the above sum equals `containing_block.width`.
         // Each arm of the `match` should increase the total width by exactly `underflow`,
         // and afterward all values should be absolute lengths in px.
-        let underflow = containing_block.width - total;
+        let underflow = containing_block.content.width - total;
 
         match (width == auto, margin_left == auto, margin_right == auto) {
             // If the values are overconstrained, calculate margin_right.
@@ -191,7 +193,7 @@ impl<'a> LayoutBox<'a> {
         }
 
         let d = &mut self.dimensions;
-        d.width = width.to_px();
+        d.content.width = width.to_px();
 
         d.padding.left = padding_left.to_px();
         d.padding.right = padding_right.to_px();
@@ -226,10 +228,10 @@ impl<'a> LayoutBox<'a> {
         d.padding.bottom = style.lookup("padding-bottom", "padding", &zero).to_px();
 
         // Position the box below all the previous boxes in the container.
-        d.x = containing_block.x +
-              d.margin.left + d.border.left + d.padding.left;
-        d.y = containing_block.y + containing_block.height +
-              d.margin.top + d.border.top + d.padding.top;
+        d.content.x = containing_block.content.x +
+                      d.margin.left + d.border.left + d.padding.left;
+        d.content.y = containing_block.content.y + containing_block.content.height +
+                      d.margin.top + d.border.top + d.padding.top;
     }
 
     /// Lay out the block's children within its content area.
@@ -240,7 +242,7 @@ impl<'a> LayoutBox<'a> {
         for child in self.children.iter_mut() {
             child.layout(*d);
             // Increment the height so each child is laid out below the previous one.
-            d.height = d.height + child.dimensions.margin_box_height();
+            d.content.height = d.content.height + child.dimensions.margin_box_height();
         }
     }
 
@@ -249,7 +251,7 @@ impl<'a> LayoutBox<'a> {
         // If the height is set to an explicit length, use that exact length.
         // Otherwise, just keep the value set by `layout_block_children`.
         match self.get_style_node().value("height") {
-            Some(Length(h, Px)) => { self.dimensions.height = h; }
+            Some(Length(h, Px)) => { self.dimensions.content.height = h; }
             _ => {}
         }
     }
@@ -274,8 +276,8 @@ impl<'a> LayoutBox<'a> {
 impl Dimensions {
     /// Total height of a box including its margins, border, and padding.
     fn margin_box_height(&self) -> f32 {
-        self.height + self.padding.top + self.padding.bottom
-                    + self.border.top + self.border.bottom
-                    + self.margin.top + self.margin.bottom
+        self.content.height + self.padding.top + self.padding.bottom
+                            + self.border.top + self.border.bottom
+                            + self.margin.top + self.margin.bottom
     }
 }
