@@ -42,12 +42,20 @@ pub struct Declaration {
 pub enum Value {
     Keyword(String),
     Length(f32, Unit),
-    Color(u8, u8, u8, u8), // RGBA
+    ColorValue(Color), // RGBA
 }
 
 #[deriving(Show, Clone, PartialEq)]
 pub enum Unit {
     Px,
+}
+
+#[deriving(Show, Clone, PartialEq)]
+pub struct Color {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8,
 }
 
 pub type Specificity = (uint, uint, uint);
@@ -210,7 +218,11 @@ impl Parser {
 
     fn parse_color(&mut self) -> Value {
         assert!(self.consume_char() == '#');
-        Color(self.parse_hex_pair(), self.parse_hex_pair(), self.parse_hex_pair(), 255)
+        ColorValue(Color {
+            r: self.parse_hex_pair(),
+            g: self.parse_hex_pair(),
+            b: self.parse_hex_pair(),
+            a: 255 })
     }
 
     /// Parse two hexadecimal digits.
