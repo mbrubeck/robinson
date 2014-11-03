@@ -10,6 +10,7 @@ mod dom;
 mod html;
 mod layout;
 mod style;
+mod painting;
 
 fn main() {
     // Parse command-line options:
@@ -46,7 +47,8 @@ fn main() {
     let stylesheet = css::parse(css);
     let style_root = style::style_tree(&root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_root, initial_containing_block);
+    let display_list = painting::build_display_list(&layout_root);
 
     // Debug output:
-    println!("{}", layout_root.dimensions);
+    println!("{}", display_list);
 }

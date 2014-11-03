@@ -280,4 +280,13 @@ impl Dimensions {
                             + self.border.top + self.border.bottom
                             + self.margin.top + self.margin.bottom
     }
+
+    pub fn padding_box(&self) -> Rect {
+        Rect {
+            x: self.content.x - self.padding.left,
+            y: self.content.y - self.padding.top,
+            width: self.content.width + self.padding.left + self.padding.right,
+            height: self.content.height + self.padding.top + self.padding.bottom,
+        }
+    }
 }

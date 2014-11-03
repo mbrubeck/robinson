@@ -50,7 +50,7 @@ pub enum Unit {
     Px,
 }
 
-#[deriving(Show, Clone, PartialEq)]
+#[deriving(Show, Clone, PartialEq, Default)]
 pub struct Color {
     r: u8,
     g: u8,
