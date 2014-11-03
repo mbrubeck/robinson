@@ -45,7 +45,7 @@ pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
 
 impl ElementData {
     pub fn get_attribute(&self, key: &str) -> Option<&String> {
-        self.attributes.find_equiv(&key)
+        self.attributes.find_equiv(key)
     }
 
     pub fn id(&self) -> Option<&String> {
