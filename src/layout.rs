@@ -65,7 +65,11 @@ impl<'a> LayoutBox<'a> {
 }
 
 /// Transform a style tree into a layout tree.
-pub fn layout_tree<'a>(node: &'a StyledNode<'a>, containing_block: Dimensions) -> LayoutBox<'a> {
+pub fn layout_tree<'a>(node: &'a StyledNode<'a>, mut containing_block: Dimensions) -> LayoutBox<'a> {
+    // The layout algorithm expects the container height to start at 0.
+    // TODO: Save the initial containing block height, for calculating percent heights.
+    containing_block.content.height = 0.0;
+
     let mut root_box = build_layout_tree(node);
     root_box.layout(containing_block);
     return root_box;
