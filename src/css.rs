@@ -6,6 +6,7 @@
 use std::ascii::OwnedAsciiExt; // for `into_ascii_lower`
 use std::from_str::FromStr;
 use std::num::FromStrRadix;
+use image::Rgba;
 
 // Data structures:
 
@@ -42,7 +43,7 @@ pub struct Declaration {
 pub enum Value {
     Keyword(String),
     Length(f32, Unit),
-    ColorValue(Color), // RGBA
+    ColorValue(Rgba<u8>),
 }
 
 #[deriving(Show, Clone, PartialEq)]
@@ -52,10 +53,10 @@ pub enum Unit {
 
 #[deriving(Show, Clone, PartialEq, Default)]
 pub struct Color {
-    r: u8,
-    g: u8,
-    b: u8,
-    a: u8,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+    pub a: u8,
 }
 
 pub type Specificity = (uint, uint, uint);
@@ -218,11 +219,10 @@ impl Parser {
 
     fn parse_color(&mut self) -> Value {
         assert!(self.consume_char() == '#');
-        ColorValue(Color {
-            r: self.parse_hex_pair(),
-            g: self.parse_hex_pair(),
-            b: self.parse_hex_pair(),
-            a: 255 })
+        let r = self.parse_hex_pair();
+        let g = self.parse_hex_pair();
+        let b = self.parse_hex_pair();
+        ColorValue(Rgba(r, g, b, 255))
     }
 
     /// Parse two hexadecimal digits.

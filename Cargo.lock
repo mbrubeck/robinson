@@ -1,4 +1,12 @@
 [root]
 name = "robinson"
 version = "0.0.1"
+dependencies = [
+ "image 0.1.0 (git+https://github.com/PistonDevelopers/image)",
+]
+
+[[package]]
+name = "image"
+version = "0.1.0"
+source = "git+https://github.com/PistonDevelopers/image#475682495f1a8626ecca217a1abd79c450528302"
 

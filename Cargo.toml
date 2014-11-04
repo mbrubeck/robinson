@@ -10,3 +10,5 @@ tags = []
 name = "robinson"
 path = "src/main.rs"
 
+[dependencies.image]
+git = "https://github.com/PistonDevelopers/image"

@@ -1,0 +1,15 @@
+head {
+  display: none;
+}
+* {
+  display: block;
+  padding: 12px;
+}
+
+div.a { background-color: #ff0000; }
+div.b { background-color: #ffa500; }
+div.c { background-color: #ffff00; }
+div.d { background-color: #008000; }
+div.e { background-color: #0000ff; }
+div.f { background-color: #4b0082; }
+div.g { background-color: #800080; }

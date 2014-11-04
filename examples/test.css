@@ -11,7 +11,7 @@ html {
   padding: 10px;
   border-width: 1px;
   margin: auto;
-  background: #0000cc;
+  background: #ffffff;
 }
 
 head {
@@ -19,6 +19,7 @@ head {
 }
 
 .inner {
+  background: #cc00cc;
   height: 100px;
   margin-bottom: 20px;
 }
