@@ -19,7 +19,7 @@ enum DisplayItem {
 
 type DisplayList = Vec<DisplayItem>;
 
-pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
+fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
     let mut list = Vec::new();
     render_layout_box(&mut list, layout_root);
     return list;
@@ -35,7 +35,7 @@ fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
 
 fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
     get_color(layout_box, "background").map(|color|
-        list.push(SolidColor(color, layout_box.dimensions.padding_box())));
+        list.push(SolidColor(color, layout_box.dimensions.border_box())));
 }
 
 fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
