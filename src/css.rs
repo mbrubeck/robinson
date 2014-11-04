@@ -51,14 +51,6 @@ pub enum Unit {
     Px,
 }
 
-#[deriving(Show, Clone, PartialEq, Default)]
-pub struct Color {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-    pub a: u8,
-}
-
 pub type Specificity = (uint, uint, uint);
 
 impl Selector {
