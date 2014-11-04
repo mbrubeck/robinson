@@ -35,7 +35,6 @@ fn main() {
     };
     let html = read_source(matches.opt_str("h"), "examples/test.html");
     let css  = read_source(matches.opt_str("c"), "examples/test.css");
-    let output = matches.opt_str("o").unwrap_or("output.png".to_string());
 
     // Since we don't have an actual window, hard-code the "viewport" size.
     let initial_containing_block = layout::Dimensions {
@@ -51,10 +50,20 @@ fn main() {
     let style_root = style::style_tree(&root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_root, initial_containing_block);
     let display_list = painting::build_display_list(&layout_root);
-    let img = painting::paint(&display_list, initial_containing_block.content);
-    let file = File::create(&Path::new(output.as_slice())).unwrap();
-    let _ = image::ImageRgba8(img).save(file, image::PNG);
-    println!("Saved output as {}", output);
+    let canvas = painting::paint(&display_list, initial_containing_block.content);
+
+    // Create the output file:
+    let filename = matches.opt_str("o").unwrap_or("output.png".to_string());
+    let file = File::create(&Path::new(filename.as_slice())).unwrap();
+
+    // Save an image:
+    let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
+    let img = image::ImageBuf::from_pixels(buffer, canvas.width as u32, canvas.height as u32);
+    let result = image::ImageRgba8(img).save(file, image::PNG);
+    match result {
+        Ok(_) => println!("Saved output as {}", filename),
+        Err(_) => println!("Error saving output as {}", filename)
+    }
 
     // Debug output:
     // println!("{}", layout_root.dimensions);

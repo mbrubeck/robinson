@@ -1,24 +1,14 @@
-use image::{GenericImage, ImageBuf, Rgba};
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
-use css::ColorValue;
+use css::{ColorValue, Color};
 use std::iter::range;
 use std::cmp::{max, min};
 
 #[deriving(Show)]
-pub enum DisplayItem {
-    SolidColor(Rect, Rgba<u8>),
+enum DisplayItem {
+    SolidColor(Rect, Color),
 }
 
 type DisplayList = Vec<DisplayItem>;
-
-pub fn paint(list: &DisplayList, bounds: Rect) -> ImageBuf<Rgba<u8>> {
-    let white = Rgba(255, 255, 255, 255);
-    let mut img = ImageBuf::from_pixel(bounds.width as u32, bounds.height as u32, white);
-    for item in list.iter() {
-        item.paint(&mut img);
-    }
-    return img;
-}
 
 pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
     let mut list = Vec::new();
@@ -36,7 +26,7 @@ fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
 }
 
 fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
-    let transparent = Rgba(0,0,0,0);
+    let transparent = Color { r: 0, g: 0, b: 0, a: 0 };
     let background_style = match layout_box.box_type {
         BlockNode(style) | InlineNode(style) => {
             Some(style.lookup("background-color", "background", &ColorValue(transparent)))
@@ -52,21 +42,46 @@ fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
     }
 }
 
+pub struct Canvas {
+    pub pixels: Vec<Color>,
+    pub width: uint,
+    pub height: uint,
+}
+
+impl Canvas {
+    fn new(width: uint, height: uint) -> Canvas {
+        let white = Color { r: 255, g: 255, b: 255, a: 255 };
+        return Canvas {
+            pixels: Vec::from_elem(width * height, white),
+            width: width,
+            height: height,
+        }
+    }
+}
+
+pub fn paint(list: &DisplayList, bounds: Rect) -> Canvas {
+    let mut canvas = Canvas::new(bounds.width as uint, bounds.height as uint);
+    for item in list.iter() {
+        item.paint(&mut canvas);
+    }
+    return canvas;
+}
+
 impl DisplayItem {
-    fn paint(&self, img: &mut ImageBuf<Rgba<u8>>) {
-        let (width, height) = img.dimensions();
+    fn paint(&self, canvas: &mut Canvas) {
         match self {
             &SolidColor(rect, color) => {
-                let xmin = max(0, rect.x as u32);
-                let ymin = max(0, rect.y as u32);
-                let xmax = min(width, (rect.x + rect.width) as u32);
-                let ymax = min(height, (rect.y + rect.height) as u32);
+                let x0 = max(0, rect.x as uint);
+                let y0 = max(0, rect.y as uint);
+                let x1 = min(canvas.width, (rect.x + rect.width) as uint);
+                let y1 = min(canvas.height, (rect.y + rect.height) as uint);
 
-                for x in range(xmin, xmax) {
-                for y in range(ymin, ymax) {
-                    // TODO: alpha compositing with existing pixel
-                    img.put_pixel(x, y, color);
-                }}
+                for x in range(x0, x1) {
+                    for y in range(y0, y1) {
+                        // TODO: alpha compositing with existing pixel
+                        canvas.pixels[x + y * canvas.width] = color;
+                    }
+                }
             }
         }
     }
