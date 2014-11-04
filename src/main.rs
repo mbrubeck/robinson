@@ -49,8 +49,7 @@ fn main() {
     let stylesheet = css::parse(css);
     let style_root = style::style_tree(&root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_root, initial_containing_block);
-    let display_list = painting::build_display_list(&layout_root);
-    let canvas = painting::paint(&display_list, initial_containing_block.content);
+    let canvas = painting::paint(&layout_root, initial_containing_block.content);
 
     // Create the output file:
     let filename = matches.opt_str("o").unwrap_or("output.png".to_string());

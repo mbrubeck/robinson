@@ -3,6 +3,16 @@ use css::{ColorValue, Color};
 use std::iter::range;
 use std::cmp::{max, min};
 
+/// Paint a tree of LayoutBoxes to an array of pixels.
+pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
+    let display_list = build_display_list(layout_root);
+    let mut canvas = Canvas::new(bounds.width as uint, bounds.height as uint);
+    for item in display_list.iter() {
+        canvas.paint_item(item);
+    }
+    return canvas;
+}
+
 #[deriving(Show)]
 enum DisplayItem {
     SolidColor(Color, Rect),
@@ -96,29 +106,19 @@ impl Canvas {
             height: height,
         }
     }
-}
 
-pub fn paint(list: &DisplayList, bounds: Rect) -> Canvas {
-    let mut canvas = Canvas::new(bounds.width as uint, bounds.height as uint);
-    for item in list.iter() {
-        item.paint(&mut canvas);
-    }
-    return canvas;
-}
-
-impl DisplayItem {
-    fn paint(&self, canvas: &mut Canvas) {
-        match self {
+    fn paint_item(&mut self, item: &DisplayItem) {
+        match item {
             &SolidColor(color, rect) => {
                 let x0 = max(0, rect.x as uint);
                 let y0 = max(0, rect.y as uint);
-                let x1 = min(canvas.width, (rect.x + rect.width) as uint);
-                let y1 = min(canvas.height, (rect.y + rect.height) as uint);
+                let x1 = min(self.width, (rect.x + rect.width) as uint);
+                let y1 = min(self.height, (rect.y + rect.height) as uint);
 
                 for x in range(x0, x1) {
                     for y in range(y0, y1) {
                         // TODO: alpha compositing with existing pixel
-                        canvas.pixels[x + y * canvas.width] = color;
+                        self.pixels[x + y * self.width] = color;
                     }
                 }
             }
