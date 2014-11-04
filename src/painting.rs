@@ -97,6 +97,7 @@ pub struct Canvas {
 }
 
 impl Canvas {
+    /// Create a blank canvas
     fn new(width: uint, height: uint) -> Canvas {
         let white = Color { r: 255, g: 255, b: 255, a: 255 };
         return Canvas {
@@ -115,10 +116,10 @@ impl Canvas {
                 let x1 = (rect.x + rect.width).clamp(0.0, self.width as f32) as uint;
                 let y1 = (rect.y + rect.height).clamp(0.0, self.height as f32) as uint;
 
-                for x in range(x0, x1) {
-                    for y in range(y0, y1) {
+                for y in range(y0, y1) {
+                    for x in range(x0, x1) {
                         // TODO: alpha compositing with existing pixel
-                        self.pixels[x + y * self.width] = color;
+                        self.pixels[y * self.width + x] = color;
                     }
                 }
             }
