@@ -18,10 +18,24 @@ head {
   display: none;
 }
 
+.outer {
+  background: #00ccff;
+  border-color: #666666;
+  border-width: 2px;
+  margin: 50px;
+  padding: 50px;
+}
+
 .inner {
-  background: #cc00cc;
+  border-color: #cc0000;
+  border-width: 4px;
   height: 100px;
   margin-bottom: 20px;
+  width: 500px;
+}
+
+.inner#bye {
+  background: #ffff00;
 }
 
 span#name {

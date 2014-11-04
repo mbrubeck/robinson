@@ -5,7 +5,7 @@ use std::cmp::{max, min};
 
 #[deriving(Show)]
 enum DisplayItem {
-    SolidColor(Rect, Color),
+    SolidColor(Color, Rect),
 }
 
 type DisplayList = Vec<DisplayItem>;
@@ -18,7 +18,7 @@ pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
 
 fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
     render_background(list, layout_box);
-    // TODO: render borders
+    render_borders(list, layout_box);
     for child in layout_box.children.iter() {
         render_layout_box(list, child);
     }
@@ -26,7 +26,49 @@ fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
 
 fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
     get_color(layout_box, "background").map(|color|
-        list.push(SolidColor(layout_box.dimensions.padding_box(), color)));
+        list.push(SolidColor(color, layout_box.dimensions.padding_box())));
+}
+
+fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
+    let color = match get_color(layout_box, "border-color") {
+        Some(color) => color,
+        _ => return
+    };
+
+    let d = &layout_box.dimensions;
+    let border_box = d.border_box();
+
+    // Left border
+    list.push(SolidColor(color, Rect {
+        x: border_box.x,
+        y: border_box.y,
+        width: d.border.left,
+        height: border_box.height,
+    }));
+
+    // Right border
+    list.push(SolidColor(color, Rect {
+        x: border_box.x + border_box.width - d.border.right,
+        y: border_box.y,
+        width: d.border.right,
+        height: border_box.height,
+    }));
+
+    // Top border
+    list.push(SolidColor(color, Rect {
+        x: border_box.x,
+        y: border_box.y,
+        width: border_box.width,
+        height: d.border.top,
+    }));
+
+    // Bottom border
+    list.push(SolidColor(color, Rect {
+        x: border_box.x,
+        y: border_box.y + border_box.height - d.border.bottom,
+        width: border_box.width,
+        height: d.border.bottom,
+    }));
 }
 
 fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
@@ -67,7 +109,7 @@ pub fn paint(list: &DisplayList, bounds: Rect) -> Canvas {
 impl DisplayItem {
     fn paint(&self, canvas: &mut Canvas) {
         match self {
-            &SolidColor(rect, color) => {
+            &SolidColor(color, rect) => {
                 let x0 = max(0, rect.x as uint);
                 let y0 = max(0, rect.y as uint);
                 let x1 = min(canvas.width, (rect.x + rect.width) as uint);

@@ -293,4 +293,14 @@ impl Dimensions {
             height: self.content.height + self.padding.top + self.padding.bottom,
         }
     }
+
+    pub fn border_box(&self) -> Rect {
+        let padding_box = self.padding_box();
+        Rect {
+            x: padding_box.x - self.border.left,
+            y: padding_box.y - self.border.top,
+            width: padding_box.width + self.border.left + self.border.right,
+            height: padding_box.height + self.border.top + self.border.bottom,
+        }
+    }
 }
