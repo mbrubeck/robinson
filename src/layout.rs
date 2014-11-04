@@ -285,6 +285,7 @@ impl Dimensions {
                             + self.margin.top + self.margin.bottom
     }
 
+    /// The area covered by the content area plus its padding.
     pub fn padding_box(&self) -> Rect {
         Rect {
             x: self.content.x - self.padding.left,
@@ -294,6 +295,7 @@ impl Dimensions {
         }
     }
 
+    /// The area covered by the content area plus padding and borders.
     pub fn border_box(&self) -> Rect {
         let padding_box = self.padding_box();
         Rect {

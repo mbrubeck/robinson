@@ -80,6 +80,7 @@ fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
     }));
 }
 
+/// Return the specified color for CSS property `name`, or None if no color was specified.
 fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
     match layout_box.box_type {
         BlockNode(style) | InlineNode(style) => match style.value(name) {
