@@ -1,7 +1,6 @@
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
 use css::{ColorValue, Color};
 use std::iter::range;
-use std::cmp::{max, min};
 
 /// Paint a tree of LayoutBoxes to an array of pixels.
 pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
@@ -110,10 +109,11 @@ impl Canvas {
     fn paint_item(&mut self, item: &DisplayItem) {
         match item {
             &SolidColor(color, rect) => {
-                let x0 = max(0, rect.x as uint);
-                let y0 = max(0, rect.y as uint);
-                let x1 = min(self.width, (rect.x + rect.width) as uint);
-                let y1 = min(self.height, (rect.y + rect.height) as uint);
+                // Clip the rectangle to the canvas boundaries.
+                let x0 = rect.x.max(0.0) as uint;
+                let y0 = rect.y.max(0.0) as uint;
+                let x1 = (rect.x + rect.width).min(self.width as f32) as uint;
+                let y1 = (rect.y + rect.height).min(self.height as f32) as uint;
 
                 for x in range(x0, x1) {
                     for y in range(y0, y1) {
