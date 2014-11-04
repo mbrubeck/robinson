@@ -110,10 +110,10 @@ impl Canvas {
         match item {
             &SolidColor(color, rect) => {
                 // Clip the rectangle to the canvas boundaries.
-                let x0 = rect.x.max(0.0) as uint;
-                let y0 = rect.y.max(0.0) as uint;
-                let x1 = (rect.x + rect.width).min(self.width as f32) as uint;
-                let y1 = (rect.y + rect.height).min(self.height as f32) as uint;
+                let x0 = rect.x.clamp(0.0, self.width as f32) as uint;
+                let y0 = rect.y.clamp(0.0, self.height as f32) as uint;
+                let x1 = (rect.x + rect.width).clamp(0.0, self.width as f32) as uint;
+                let y1 = (rect.y + rect.height).clamp(0.0, self.height as f32) as uint;
 
                 for x in range(x0, x1) {
                     for y in range(y0, y1) {
@@ -125,3 +125,10 @@ impl Canvas {
         }
     }
 }
+
+trait FloatClamp : FloatMath {
+    fn clamp(self, lower: Self, upper: Self) -> Self {
+        self.max(lower).min(upper)
+    }
+}
+impl<T: FloatMath> FloatClamp for T {}
