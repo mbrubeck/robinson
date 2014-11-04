@@ -19,26 +19,23 @@ pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
 fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
     render_background(list, layout_box);
     // TODO: render borders
-    // TODO: render text
     for child in layout_box.children.iter() {
         render_layout_box(list, child);
     }
 }
 
 fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
-    let transparent = Color { r: 0, g: 0, b: 0, a: 0 };
-    let background_style = match layout_box.box_type {
-        BlockNode(style) | InlineNode(style) => {
-            Some(style.lookup("background-color", "background", &ColorValue(transparent)))
-        }
-        AnonymousBlock => None
-    };
+    get_color(layout_box, "background").map(|color|
+        list.push(SolidColor(layout_box.dimensions.padding_box(), color)));
+}
 
-    match background_style {
-        Some(ColorValue(color)) if color != transparent => {
-            list.push(SolidColor(layout_box.dimensions.padding_box(), color));
-        }
-        _ => {} // other values not supported yet
+fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
+    match layout_box.box_type {
+        BlockNode(style) | InlineNode(style) => match style.value(name) {
+            Some(ColorValue(color)) => Some(color),
+            _ => None
+        },
+        AnonymousBlock => None
     }
 }
 
