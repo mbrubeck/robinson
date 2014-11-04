@@ -46,15 +46,17 @@ Coming soon, I hope:
 Instructions
 ------------
 
-1. Install [Rust](http://www.rust-lang.org/) 0.12.0-pre or newer. (Nightly
-   builds are recommended.)
+1. [Install Cargo and Rust.](http://doc.crates.io/)
 
 2. Clone the robinson source code from https://github.com/mbrubeck/robinson
 
-3. Run `make` to build robinson, and `make run` to run it.
+3. Run `cargo build` to build robinson, and `cargo run` to run it.
 
 By default, robinson will load test.html and test.css from the `examples`
 directory.  You can use the `--html` and `--css` arguments to the robinson
 executable to change the input files:
 
-    ./bin/main --html file.html --css file.css
+    ./target/robinson --html file.html --css file.css
+
+The rendered page will be saved to a file named `output.png`.  To change the
+output filename, use the `-o` option.
