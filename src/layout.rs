@@ -246,7 +246,7 @@ impl<'a> LayoutBox<'a> {
         for child in self.children.iter_mut() {
             child.layout(*d);
             // Increment the height so each child is laid out below the previous one.
-            d.content.height = d.content.height + child.dimensions.margin_box_height();
+            d.content.height = d.content.height + child.dimensions.margin_box().height;
         }
     }
 
@@ -277,32 +277,28 @@ impl<'a> LayoutBox<'a> {
     }
 }
 
-impl Dimensions {
-    /// Total height of a box including its margins, border, and padding.
-    fn margin_box_height(&self) -> f32 {
-        self.content.height + self.padding.top + self.padding.bottom
-                            + self.border.top + self.border.bottom
-                            + self.margin.top + self.margin.bottom
+impl Rect {
+    pub fn expanded_by(self, edge: EdgeSizes) -> Rect {
+        Rect {
+            x: self.x - edge.left,
+            y: self.y - edge.top,
+            width: self.width + edge.left + edge.right,
+            height: self.height + edge.top + edge.bottom,
+        }
     }
+}
 
+impl Dimensions {
     /// The area covered by the content area plus its padding.
     pub fn padding_box(&self) -> Rect {
-        Rect {
-            x: self.content.x - self.padding.left,
-            y: self.content.y - self.padding.top,
-            width: self.content.width + self.padding.left + self.padding.right,
-            height: self.content.height + self.padding.top + self.padding.bottom,
-        }
+        self.content.expanded_by(self.padding)
     }
-
     /// The area covered by the content area plus padding and borders.
     pub fn border_box(&self) -> Rect {
-        let padding_box = self.padding_box();
-        Rect {
-            x: padding_box.x - self.border.left,
-            y: padding_box.y - self.border.top,
-            width: padding_box.width + self.border.left + self.border.right,
-            height: padding_box.height + self.border.top + self.border.bottom,
-        }
+        self.padding_box().expanded_by(self.border)
+    }
+    /// The area covered by the content area plus padding, borders, and margin.
+    pub fn margin_box(&self) -> Rect {
+        self.border_box().expanded_by(self.margin)
     }
 }
