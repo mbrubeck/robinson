@@ -290,15 +290,15 @@ impl Rect {
 
 impl Dimensions {
     /// The area covered by the content area plus its padding.
-    pub fn padding_box(&self) -> Rect {
+    pub fn padding_box(self) -> Rect {
         self.content.expanded_by(self.padding)
     }
     /// The area covered by the content area plus padding and borders.
-    pub fn border_box(&self) -> Rect {
+    pub fn border_box(self) -> Rect {
         self.padding_box().expanded_by(self.border)
     }
     /// The area covered by the content area plus padding, borders, and margin.
-    pub fn margin_box(&self) -> Rect {
+    pub fn margin_box(self) -> Rect {
         self.border_box().expanded_by(self.margin)
     }
 }
