@@ -2,6 +2,12 @@ use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
 use css::{ColorValue, Color};
 use std::iter::range;
 
+pub struct Canvas {
+    pub pixels: Vec<Color>,
+    pub width: uint,
+    pub height: uint,
+}
+
 /// Paint a tree of LayoutBoxes to an array of pixels.
 pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
     let display_list = build_display_list(layout_root);
@@ -13,11 +19,11 @@ pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
 }
 
 #[deriving(Show)]
-enum DisplayItem {
+enum DisplayCommand {
     SolidColor(Color, Rect),
 }
 
-type DisplayList = Vec<DisplayItem>;
+type DisplayList = Vec<DisplayCommand>;
 
 fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
     let mut list = Vec::new();
@@ -91,12 +97,6 @@ fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
     }
 }
 
-pub struct Canvas {
-    pub pixels: Vec<Color>,
-    pub width: uint,
-    pub height: uint,
-}
-
 impl Canvas {
     /// Create a blank canvas
     fn new(width: uint, height: uint) -> Canvas {
@@ -108,7 +108,7 @@ impl Canvas {
         }
     }
 
-    fn paint_item(&mut self, item: &DisplayItem) {
+    fn paint_item(&mut self, item: &DisplayCommand) {
         match item {
             &SolidColor(color, rect) => {
                 // Clip the rectangle to the canvas boundaries.
