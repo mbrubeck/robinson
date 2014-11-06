@@ -5,7 +5,7 @@
 
 use dom::{Node, Element, ElementData, Text};
 use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector, Value, Keyword, Specificity};
-use std::collections::hashmap::HashMap;
+use std::collections::HashMap;
 
 /// Map from CSS property names to values.
 pub type PropertyMap =  HashMap<String, Value>;

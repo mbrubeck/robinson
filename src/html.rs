@@ -11,7 +11,7 @@
 //! * Character entities
 
 use dom;
-use std::collections::hashmap::HashMap;
+use std::collections::HashMap;
 
 /// Parse an HTML document and return the root element.
 pub fn parse(source: String) -> dom::Node {
