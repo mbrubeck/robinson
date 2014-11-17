@@ -8,5 +8,5 @@ dependencies = [
 [[package]]
 name = "image"
 version = "0.1.0"
-source = "git+https://github.com/PistonDevelopers/image#4d83ec4e6abc2bdfce3da3e5f49762728b9f5617"
+source = "git+https://github.com/PistonDevelopers/image#858c33df5a1c45d7961d9b8a920233e623728a2a"
 

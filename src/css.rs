@@ -4,7 +4,7 @@
 //! hand-rolled parser with one based on a library or parser generator.
 
 use std::ascii::OwnedAsciiExt; // for `into_ascii_lower`
-use std::from_str::FromStr;
+use std::str::FromStr;
 use std::num::FromStrRadix;
 
 // Data structures:
