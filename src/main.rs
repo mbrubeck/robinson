@@ -20,7 +20,7 @@ fn main() {
         optopt("c", "css", "CSS stylesheet", "FILENAME"),
         optopt("o", "output", "Output file", "FILENAME"),
     ];
-    let matches = match getopts(args().tail(), opts) {
+    let matches = match getopts(args().tail(), &opts) {
         Ok(m) => m,
         Err(f) => panic!(f.to_string())
     };

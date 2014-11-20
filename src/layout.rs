@@ -1,9 +1,12 @@
 ///! Basic CSS block layout.
 
-use style::{StyledNode, Inline, Block, DisplayNone};
-use css::{Keyword, Length, Px};
+use style::{StyledNode, Display};
+use css::Value::{Keyword, Length};
+use css::Unit::Px;
 use std::default::Default;
 use std::iter::AdditiveIterator; // for `sum`
+
+pub use self::BoxType::{AnonymousBlock, InlineNode, BlockNode};
 
 // CSS box model. All sizes are in px.
 
@@ -79,17 +82,17 @@ pub fn layout_tree<'a>(node: &'a StyledNode<'a>, mut containing_block: Dimension
 fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
     // Create the root box.
     let mut root = LayoutBox::new(match style_node.display() {
-        Block => BlockNode(style_node),
-        Inline => InlineNode(style_node),
-        DisplayNone => panic!("Root node has display: none.")
+        Display::Block => BlockNode(style_node),
+        Display::Inline => InlineNode(style_node),
+        Display::None => panic!("Root node has display: none.")
     });
 
     // Create the descendant boxes.
     for child in style_node.children.iter() {
         match child.display() {
-            Block => root.children.push(build_layout_tree(child)),
-            Inline => root.get_inline_container().children.push(build_layout_tree(child)),
-            DisplayNone => {} // Don't lay out nodes with `display: none;`
+            Display::Block => root.children.push(build_layout_tree(child)),
+            Display::Inline => root.get_inline_container().children.push(build_layout_tree(child)),
+            Display::None => {} // Don't lay out nodes with `display: none;`
         }
     }
     return root;

@@ -3,8 +3,8 @@
 //! This is not very interesting at the moment.  It will get much more
 //! complicated if I add support for compound selectors.
 
-use dom::{Node, Element, ElementData, Text};
-use css::{Stylesheet, Rule, Selector, Simple, SimpleSelector, Value, Keyword, Specificity};
+use dom::{Node, NodeType, ElementData};
+use css::{Stylesheet, Rule, Selector, SimpleSelector, Value, Specificity};
 use std::collections::HashMap;
 
 /// Map from CSS property names to values.
@@ -21,7 +21,7 @@ pub struct StyledNode<'a> {
 pub enum Display {
     Inline,
     Block,
-    DisplayNone,
+    None,
 }
 
 impl<'a> StyledNode<'a> {
@@ -40,12 +40,12 @@ impl<'a> StyledNode<'a> {
     /// The value of the `display` property (defaults to inline).
     pub fn display(&self) -> Display {
         match self.value("display") {
-            Some(Keyword(s)) => match s.as_slice() {
-                "block" => Block,
-                "none" => DisplayNone,
-                _ => Inline
+            Some(Value::Keyword(s)) => match s.as_slice() {
+                "block" => Display::Block,
+                "none" => Display::None,
+                _ => Display::Inline
             },
-            _ => Inline
+            _ => Display::Inline
         }
     }
 }
@@ -58,8 +58,8 @@ pub fn style_tree<'a>(root: &'a Node, stylesheet: &'a Stylesheet) -> StyledNode<
     StyledNode {
         node: root,
         specified_values: match root.node_type {
-            Element(ref elem) => specified_values(elem, stylesheet),
-            Text(_) => HashMap::new()
+            NodeType::Element(ref elem) => specified_values(elem, stylesheet),
+            NodeType::Text(_) => HashMap::new()
         },
         children: root.children.iter().map(|child| style_tree(child, stylesheet)).collect(),
     }
@@ -103,7 +103,7 @@ fn match_rule<'a>(elem: &ElementData, rule: &'a Rule) -> Option<MatchedRule<'a>>
 /// Selector matching:
 fn matches(elem: &ElementData, selector: &Selector) -> bool {
     match *selector {
-        Simple(ref simple_selector) => matches_simple_selector(elem, simple_selector)
+        Selector::Simple(ref simple_selector) => matches_simple_selector(elem, simple_selector)
     }
 }
 

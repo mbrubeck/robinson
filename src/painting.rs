@@ -1,5 +1,5 @@
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
-use css::{ColorValue, Color};
+use css::{Value, Color};
 use std::iter::range;
 use std::num::FloatMath;
 
@@ -42,7 +42,7 @@ fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
 
 fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
     get_color(layout_box, "background").map(|color|
-        list.push(SolidColor(color, layout_box.dimensions.border_box())));
+        list.push(DisplayCommand::SolidColor(color, layout_box.dimensions.border_box())));
 }
 
 fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
@@ -55,7 +55,7 @@ fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
     let border_box = d.border_box();
 
     // Left border
-    list.push(SolidColor(color, Rect {
+    list.push(DisplayCommand::SolidColor(color, Rect {
         x: border_box.x,
         y: border_box.y,
         width: d.border.left,
@@ -63,7 +63,7 @@ fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
     }));
 
     // Right border
-    list.push(SolidColor(color, Rect {
+    list.push(DisplayCommand::SolidColor(color, Rect {
         x: border_box.x + border_box.width - d.border.right,
         y: border_box.y,
         width: d.border.right,
@@ -71,7 +71,7 @@ fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
     }));
 
     // Top border
-    list.push(SolidColor(color, Rect {
+    list.push(DisplayCommand::SolidColor(color, Rect {
         x: border_box.x,
         y: border_box.y,
         width: border_box.width,
@@ -79,7 +79,7 @@ fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
     }));
 
     // Bottom border
-    list.push(SolidColor(color, Rect {
+    list.push(DisplayCommand::SolidColor(color, Rect {
         x: border_box.x,
         y: border_box.y + border_box.height - d.border.bottom,
         width: border_box.width,
@@ -91,7 +91,7 @@ fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
 fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
     match layout_box.box_type {
         BlockNode(style) | InlineNode(style) => match style.value(name) {
-            Some(ColorValue(color)) => Some(color),
+            Some(Value::ColorValue(color)) => Some(color),
             _ => None
         },
         AnonymousBlock => None
@@ -111,7 +111,7 @@ impl Canvas {
 
     fn paint_item(&mut self, item: &DisplayCommand) {
         match item {
-            &SolidColor(color, rect) => {
+            &DisplayCommand::SolidColor(color, rect) => {
                 // Clip the rectangle to the canvas boundaries.
                 let x0 = rect.x.clamp(0.0, self.width as f32) as uint;
                 let y0 = rect.y.clamp(0.0, self.height as f32) as uint;
