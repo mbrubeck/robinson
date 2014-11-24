@@ -27,7 +27,7 @@ pub enum Display {
 impl<'a> StyledNode<'a> {
     /// Return the specified value of a property if it exists, otherwise `None`.
     pub fn value(&self, name: &str) -> Option<Value> {
-        self.specified_values.find_equiv(name).map(|v| v.clone())
+        self.specified_values.get(name).map(|v| v.clone())
     }
 
     /// Return the specified value of property `name`, or property `fallback_name` if that doesn't
