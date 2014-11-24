@@ -44,16 +44,12 @@ pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
 // Element methods
 
 impl ElementData {
-    pub fn get_attribute(&self, key: &str) -> Option<&String> {
-        self.attributes.get(key)
-    }
-
     pub fn id(&self) -> Option<&String> {
-        self.get_attribute("id")
+        self.attributes.get("id")
     }
 
     pub fn classes(&self) -> HashSet<&str> {
-        match self.get_attribute("class") {
+        match self.attributes.get("class") {
             Some(classlist) => classlist.as_slice().split(' ').collect(),
             None => HashSet::new()
         }
