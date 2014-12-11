@@ -56,8 +56,10 @@ fn main() {
     let file = File::create(&Path::new(filename.as_slice())).unwrap();
 
     // Save an image:
+    let (w, h) = (canvas.width as u32, canvas.height as u32);
     let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
-    let img = image::ImageBuf::from_pixels(buffer, canvas.width as u32, canvas.height as u32);
+    let img = image::ImageBuffer::from_fn(w, h, |x, y| buffer[(y * w + x) as uint]);
+
     let result = image::ImageRgba8(img).save(file, image::PNG);
     match result {
         Ok(_) => println!("Saved output as {}", filename),
