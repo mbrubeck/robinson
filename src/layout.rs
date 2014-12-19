@@ -36,6 +36,10 @@ pub struct EdgeSizes {
     pub bottom: f32,
 }
 
+impl Copy for Rect {}
+impl Copy for Dimensions {}
+impl Copy for EdgeSizes {}
+
 /// A node in the layout tree.
 pub struct LayoutBox<'a> {
     pub dimensions: Dimensions,
