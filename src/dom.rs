@@ -41,6 +41,24 @@ pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
     }
 }
 
+impl Node {
+    pub fn get_elements_by_tag_name(&self, name: &str) -> Vec<&Node> {
+        let mut results = Vec::new();
+        match self.node_type {
+            Element(ref element_data) => {
+                if element_data.tag_name.as_slice() == name {
+                    results.push(self);
+                }
+                for child in self.children.iter() {
+                    results.extend(child.get_elements_by_tag_name(name).into_iter());
+                }
+            },
+            Text(_) => (),
+        }
+        results
+    }
+}
+
 // Element methods
 
 impl ElementData {
