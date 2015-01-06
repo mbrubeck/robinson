@@ -10,7 +10,7 @@ pub use self::BoxType::{AnonymousBlock, InlineNode, BlockNode};
 
 // CSS box model. All sizes are in px.
 
-#[deriving(Default, Show)]
+#[derive(Default, Show)]
 pub struct Rect {
     pub x: f32,
     pub y: f32,
@@ -18,7 +18,7 @@ pub struct Rect {
     pub height: f32,
 }
 
-#[deriving(Default, Show)]
+#[derive(Default, Show)]
 pub struct Dimensions {
     /// Position of the content area relative to the document origin:
     pub content: Rect,
@@ -28,7 +28,7 @@ pub struct Dimensions {
     pub margin: EdgeSizes,
 }
 
-#[deriving(Default, Show)]
+#[derive(Default, Show)]
 pub struct EdgeSizes {
     pub left: f32,
     pub right: f32,

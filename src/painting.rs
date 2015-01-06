@@ -1,6 +1,6 @@
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
 use css::{Value, Color};
-use std::iter::range;
+use std::iter::{repeat, range};
 use std::num::FloatMath;
 
 pub struct Canvas {
@@ -19,7 +19,7 @@ pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
     return canvas;
 }
 
-#[deriving(Show)]
+#[derive(Show)]
 enum DisplayCommand {
     SolidColor(Color, Rect),
 }
@@ -103,7 +103,7 @@ impl Canvas {
     fn new(width: uint, height: uint) -> Canvas {
         let white = Color { r: 255, g: 255, b: 255, a: 255 };
         return Canvas {
-            pixels: Vec::from_elem(width * height, white),
+            pixels: repeat(white).take(width * height).collect(),
             width: width,
             height: height,
         }

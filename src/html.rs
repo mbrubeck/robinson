@@ -19,7 +19,7 @@ pub fn parse(source: String) -> dom::Node {
 
     // If the document contains a root element, just return it. Otherwise, create one.
     if nodes.len() == 1 {
-        nodes.swap_remove(0).unwrap()
+        nodes.swap_remove(0)
     } else {
         dom::elem("html".to_string(), HashMap::new(), nodes)
     }
@@ -122,7 +122,7 @@ impl Parser {
     }
 
     /// Consume characters until `test` returns false.
-    fn consume_while(&mut self, test: |char| -> bool) -> String {
+    fn consume_while<F: Fn(char) -> bool>(&mut self, test: F) -> String {
         let mut result = String::new();
         while !self.eof() && test(self.next_char()) {
             result.push(self.consume_char());

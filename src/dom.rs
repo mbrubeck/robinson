@@ -4,7 +4,7 @@ use std::collections::{HashMap,HashSet};
 
 pub type AttrMap = HashMap<String, String>;
 
-#[deriving(Show)]
+#[derive(Show)]
 pub struct Node {
     // data common to all nodes:
     pub children: Vec<Node>,
@@ -13,13 +13,13 @@ pub struct Node {
     pub node_type: NodeType,
 }
 
-#[deriving(Show)]
+#[derive(Show)]
 pub enum NodeType {
     Element(ElementData),
     Text(String),
 }
 
-#[deriving(Show)]
+#[derive(Show)]
 pub struct ElementData {
     pub tag_name: String,
     pub attributes: AttrMap,

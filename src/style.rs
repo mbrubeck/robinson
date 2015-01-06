@@ -17,7 +17,7 @@ pub struct StyledNode<'a> {
     pub children: Vec<StyledNode<'a>>,
 }
 
-#[deriving(PartialEq)]
+#[derive(PartialEq)]
 pub enum Display {
     Inline,
     Block,

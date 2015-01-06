@@ -9,48 +9,48 @@ use std::num::FromStrRadix;
 
 // Data structures:
 
-#[deriving(Show)]
+#[derive(Show)]
 pub struct Stylesheet {
     pub rules: Vec<Rule>,
 }
 
-#[deriving(Show)]
+#[derive(Show)]
 pub struct Rule {
     pub selectors: Vec<Selector>,
     pub declarations: Vec<Declaration>,
 }
 
-#[deriving(Show)]
+#[derive(Show)]
 pub enum Selector {
     Simple(SimpleSelector),
 }
 
-#[deriving(Show)]
+#[derive(Show)]
 pub struct SimpleSelector {
     pub tag_name: Option<String>,
     pub id: Option<String>,
     pub class: Vec<String>,
 }
 
-#[deriving(Show)]
+#[derive(Show)]
 pub struct Declaration {
     pub name: String,
     pub value: Value,
 }
 
-#[deriving(Show, Clone, PartialEq)]
+#[derive(Show, Clone, PartialEq)]
 pub enum Value {
     Keyword(String),
     Length(f32, Unit),
     ColorValue(Color),
 }
 
-#[deriving(Show, Clone, PartialEq)]
+#[derive(Show, Clone, PartialEq)]
 pub enum Unit {
     Px,
 }
 
-#[deriving(Show, Clone, PartialEq, Default)]
+#[derive(Show, Clone, PartialEq, Default)]
 pub struct Color {
     pub r: u8,
     pub g: u8,
@@ -245,7 +245,7 @@ impl Parser {
     }
 
     /// Consume characters until `test` returns false.
-    fn consume_while(&mut self, test: |char| -> bool) -> String {
+    fn consume_while<F: Fn(char) -> bool>(&mut self, test: F) -> String {
         let mut result = String::new();
         while !self.eof() && test(self.next_char()) {
             result.push(self.consume_char());
