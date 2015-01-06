@@ -2,13 +2,13 @@
 name = "robinson"
 version = "0.0.1"
 dependencies = [
- "image 0.2.0-alpha.4 (git+https://github.com/mbrubeck/image?branch=unboxed-closures)",
+ "image 0.2.0-alpha.4 (git+https://github.com/PistonDevelopers/image)",
 ]
 
 [[package]]
 name = "image"
 version = "0.2.0-alpha.4"
-source = "git+https://github.com/mbrubeck/image?branch=unboxed-closures#4c9d3d211ca1be3a97ce0de412d4f6e9e16f3343"
+source = "git+https://github.com/PistonDevelopers/image#0e1ba1656cd3b4540496d9915ea8b33edd383309"
 dependencies = [
  "num 0.1.5 (git+https://github.com/rust-lang/num)",
 ]
