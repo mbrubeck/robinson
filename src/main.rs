@@ -1,3 +1,5 @@
+#![allow(unstable)]
+
 extern crate getopts;
 extern crate image;
 
@@ -58,7 +60,7 @@ fn main() {
     // Save an image:
     let (w, h) = (canvas.width as u32, canvas.height as u32);
     let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
-    let img = image::ImageBuffer::from_fn(w, h, box |&: x, y| buffer[(y * w + x) as uint]);
+    let img = image::ImageBuffer::from_fn(w, h, Box::new(|&: x: u32, y: u32| buffer[(y * w + x) as usize]));
 
     let result = image::ImageRgba8(img).save(file, image::PNG);
     match result {

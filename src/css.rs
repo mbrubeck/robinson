@@ -60,7 +60,7 @@ pub struct Color {
 
 impl Copy for Color {}
 
-pub type Specificity = (uint, uint, uint);
+pub type Specificity = (usize, usize, usize);
 
 impl Selector {
     pub fn specificity(&self) -> Specificity {
@@ -85,12 +85,12 @@ impl Value {
 
 /// Parse a whole CSS stylesheet.
 pub fn parse(source: String) -> Stylesheet {
-    let mut parser = Parser { pos: 0u, input: source };
+    let mut parser = Parser { pos: 0, input: source };
     Stylesheet { rules: parser.parse_rules() }
 }
 
 struct Parser {
-    pos: uint,
+    pos: usize,
     input: String,
 }
 

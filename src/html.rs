@@ -15,7 +15,7 @@ use std::collections::HashMap;
 
 /// Parse an HTML document and return the root element.
 pub fn parse(source: String) -> dom::Node {
-    let mut nodes = Parser { pos: 0u, input: source }.parse_nodes();
+    let mut nodes = Parser { pos: 0, input: source }.parse_nodes();
 
     // If the document contains a root element, just return it. Otherwise, create one.
     if nodes.len() == 1 {
@@ -26,7 +26,7 @@ pub fn parse(source: String) -> dom::Node {
 }
 
 struct Parser {
-    pos: uint,
+    pos: usize,
     input: String,
 }
 

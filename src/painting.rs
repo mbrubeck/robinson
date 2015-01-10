@@ -1,18 +1,18 @@
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
 use css::{Value, Color};
 use std::iter::{repeat, range};
-use std::num::FloatMath;
+use std::num::Float;
 
 pub struct Canvas {
     pub pixels: Vec<Color>,
-    pub width: uint,
-    pub height: uint,
+    pub width: usize,
+    pub height: usize,
 }
 
 /// Paint a tree of LayoutBoxes to an array of pixels.
 pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
     let display_list = build_display_list(layout_root);
-    let mut canvas = Canvas::new(bounds.width as uint, bounds.height as uint);
+    let mut canvas = Canvas::new(bounds.width as usize, bounds.height as usize);
     for item in display_list.iter() {
         canvas.paint_item(item);
     }
@@ -100,7 +100,7 @@ fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
 
 impl Canvas {
     /// Create a blank canvas
-    fn new(width: uint, height: uint) -> Canvas {
+    fn new(width: usize, height: usize) -> Canvas {
         let white = Color { r: 255, g: 255, b: 255, a: 255 };
         return Canvas {
             pixels: repeat(white).take(width * height).collect(),
@@ -113,10 +113,10 @@ impl Canvas {
         match item {
             &DisplayCommand::SolidColor(color, rect) => {
                 // Clip the rectangle to the canvas boundaries.
-                let x0 = rect.x.clamp(0.0, self.width as f32) as uint;
-                let y0 = rect.y.clamp(0.0, self.height as f32) as uint;
-                let x1 = (rect.x + rect.width).clamp(0.0, self.width as f32) as uint;
-                let y1 = (rect.y + rect.height).clamp(0.0, self.height as f32) as uint;
+                let x0 = rect.x.clamp(0.0, self.width as f32) as usize;
+                let y0 = rect.y.clamp(0.0, self.height as f32) as usize;
+                let x1 = (rect.x + rect.width).clamp(0.0, self.width as f32) as usize;
+                let y1 = (rect.y + rect.height).clamp(0.0, self.height as f32) as usize;
 
                 for y in range(y0, y1) {
                     for x in range(x0, x1) {
@@ -129,9 +129,9 @@ impl Canvas {
     }
 }
 
-trait FloatClamp : FloatMath {
+trait FloatClamp : Float {
     fn clamp(self, lower: Self, upper: Self) -> Self {
         self.max(lower).min(upper)
     }
 }
-impl<T: FloatMath> FloatClamp for T {}
+impl<T: Float> FloatClamp for T {}
