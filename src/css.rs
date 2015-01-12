@@ -207,12 +207,12 @@ impl Parser {
             '0'...'9' | '.' => true,
             _ => false
         });
-        let f: Option<f32> = FromStr::from_str(s.as_slice());
+        let f: Option<f32> = FromStr::from_str(&*s);
         f.unwrap()
     }
 
     fn parse_unit(&mut self) -> Unit {
-        match self.parse_identifier().into_ascii_lowercase().as_slice() {
+        match &*self.parse_identifier().into_ascii_lowercase() {
             "px" => Unit::Px,
             _ => panic!("unrecognized unit")
         }
@@ -229,7 +229,7 @@ impl Parser {
 
     /// Parse two hexadecimal digits.
     fn parse_hex_pair(&mut self) -> u8 {
-        let s = self.input.as_slice().slice(self.pos, self.pos + 2);
+        let s = self.input.slice(self.pos, self.pos + 2);
         self.pos = self.pos + 2;
         FromStrRadix::from_str_radix(s, 0x10).unwrap()
     }
@@ -255,14 +255,14 @@ impl Parser {
 
     /// Return the current character, and advance self.pos to the next character.
     fn consume_char(&mut self) -> char {
-        let range = self.input.as_slice().char_range_at(self.pos);
+        let range = self.input.char_range_at(self.pos);
         self.pos = range.next;
         return range.ch;
     }
 
     /// Read the current character without consuming it.
     fn next_char(&self) -> char {
-        self.input.as_slice().char_at(self.pos)
+        self.input.char_at(self.pos)
     }
 
     /// Return true if all input is consumed.

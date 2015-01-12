@@ -132,19 +132,19 @@ impl Parser {
 
     /// Return the current character, and advance self.pos to the next character.
     fn consume_char(&mut self) -> char {
-        let range = self.input.as_slice().char_range_at(self.pos);
+        let range = self.input.char_range_at(self.pos);
         self.pos = range.next;
         return range.ch;
     }
 
     /// Read the current character without consuming it.
     fn next_char(&self) -> char {
-        self.input.as_slice().char_at(self.pos)
+        self.input.char_at(self.pos)
     }
 
     /// Does the current input start with the given string?
     fn starts_with(&self, s: &str) -> bool {
-        self.input.as_slice().slice_from(self.pos).starts_with(s)
+        self.input.slice_from(self.pos).starts_with(s)
     }
 
     /// Return true if all input is consumed.

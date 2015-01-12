@@ -30,7 +30,7 @@ fn main() {
     // Read input files:
     let read_source = |&: arg_filename: Option<String>, default_filename: &str| {
         let path = match arg_filename {
-            Some(ref filename) => filename.as_slice(),
+            Some(ref filename) => &**filename,
             None => default_filename,
         };
         File::open(&Path::new(path)).read_to_string().unwrap()
@@ -55,7 +55,7 @@ fn main() {
 
     // Create the output file:
     let filename = matches.opt_str("o").unwrap_or("output.png".to_string());
-    let file = File::create(&Path::new(filename.as_slice())).unwrap();
+    let file = File::create(&Path::new(&*filename)).unwrap();
 
     // Save an image:
     let (w, h) = (canvas.width as u32, canvas.height as u32);
