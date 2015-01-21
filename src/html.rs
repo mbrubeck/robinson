@@ -119,11 +119,12 @@ impl Parser {
 
     /// Consume and discard zero or more whitespace characters.
     fn consume_whitespace(&mut self) {
-        self.consume_while(|c| c.is_whitespace());
+        self.consume_while(CharExt::is_whitespace);
     }
 
     /// Consume characters until `test` returns false.
-    fn consume_while<F: Fn(char) -> bool>(&mut self, test: F) -> String {
+    fn consume_while<F>(&mut self, test: F) -> String
+            where F: Fn(char) -> bool {
         let mut result = String::new();
         while !self.eof() && test(self.next_char()) {
             result.push(self.consume_char());
