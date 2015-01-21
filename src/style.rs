@@ -40,7 +40,7 @@ impl<'a> StyledNode<'a> {
     /// The value of the `display` property (defaults to inline).
     pub fn display(&self) -> Display {
         match self.value("display") {
-            Some(Value::Keyword(s)) => match s.as_slice() {
+            Some(Value::Keyword(s)) => match &*s {
                 "block" => Display::Block,
                 "none" => Display::None,
                 _ => Display::Inline
@@ -120,7 +120,7 @@ fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> boo
 
     // Check class selectors
     let elem_classes = elem.classes();
-    if selector.class.iter().any(|class| !elem_classes.contains(&class.as_slice())) {
+    if selector.class.iter().any(|class| !elem_classes.contains(&**class)) {
         return false;
     }
 

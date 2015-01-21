@@ -50,7 +50,7 @@ impl ElementData {
 
     pub fn classes(&self) -> HashSet<&str> {
         match self.attributes.get("class") {
-            Some(classlist) => classlist.as_slice().split(' ').collect(),
+            Some(classlist) => classlist.split(' ').collect(),
             None => HashSet::new()
         }
     }

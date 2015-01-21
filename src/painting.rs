@@ -1,6 +1,6 @@
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
 use css::{Value, Color};
-use std::iter::{repeat, range};
+use std::iter::repeat;
 use std::num::Float;
 
 pub struct Canvas {
@@ -118,8 +118,8 @@ impl Canvas {
                 let x1 = (rect.x + rect.width).clamp(0.0, self.width as f32) as usize;
                 let y1 = (rect.y + rect.height).clamp(0.0, self.height as f32) as usize;
 
-                for y in range(y0, y1) {
-                    for x in range(x0, x1) {
+                for y in (y0 .. y1) {
+                    for x in (x0 .. x1) {
                         // TODO: alpha compositing with existing pixel
                         self.pixels[y * self.width + x] = color;
                     }

@@ -129,6 +129,7 @@ impl<'a> LayoutBox<'a> {
         self.calculate_block_height();
     }
 
+    #[allow(unstable)]
     /// Calculate the width of a block-level non-replaced element in normal flow.
     ///
     /// http://www.w3.org/TR/CSS2/visudet.html#blockwidth

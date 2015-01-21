@@ -1,5 +1,3 @@
-#![allow(unstable)]
-
 extern crate getopts;
 extern crate image;
 
@@ -15,6 +13,7 @@ mod layout;
 mod style;
 mod painting;
 
+#[allow(unstable)]
 fn main() {
     // Parse command-line options:
     let opts = [
