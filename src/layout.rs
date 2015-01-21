@@ -239,10 +239,11 @@ impl<'a> LayoutBox<'a> {
         d.padding.top = style.lookup("padding-top", "padding", &zero).to_px();
         d.padding.bottom = style.lookup("padding-bottom", "padding", &zero).to_px();
 
-        // Position the box below all the previous boxes in the container.
         d.content.x = containing_block.content.x +
                       d.margin.left + d.border.left + d.padding.left;
-        d.content.y = containing_block.content.y + containing_block.content.height +
+
+        // Position the box below all the previous boxes in the container.
+        d.content.y = containing_block.content.height + containing_block.content.y +
                       d.margin.top + d.border.top + d.padding.top;
     }
 
@@ -262,9 +263,8 @@ impl<'a> LayoutBox<'a> {
     fn calculate_block_height(&mut self) {
         // If the height is set to an explicit length, use that exact length.
         // Otherwise, just keep the value set by `layout_block_children`.
-        match self.get_style_node().value("height") {
-            Some(Length(h, Px)) => { self.dimensions.content.height = h; }
-            _ => {}
+        if let Some(Length(h, Px)) = self.get_style_node().value("height") {
+            self.dimensions.content.height = h;
         }
     }
 
