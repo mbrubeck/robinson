@@ -1,3 +1,4 @@
+
 extern crate getopts;
 extern crate image;
 
@@ -12,6 +13,7 @@ mod html;
 mod layout;
 mod style;
 mod painting;
+mod pdf;
 
 #[allow(unstable)]
 fn main() {
@@ -20,10 +22,20 @@ fn main() {
         optopt("h", "html", "HTML document", "FILENAME"),
         optopt("c", "css", "CSS stylesheet", "FILENAME"),
         optopt("o", "output", "Output file", "FILENAME"),
+        optopt("f", "format", "Output file format", "png | pdf"),
     ];
     let matches = match getopts(args().tail(), &opts) {
         Ok(m) => m,
         Err(f) => panic!(f.to_string())
+    };
+
+    let png = match matches.opt_str("f") {
+        None => true,
+        Some(format) => match &*format {
+            "png" => true,
+            "pdf" => false,
+            _ => panic!("Unknow output format: {}", format),
+        }
     };
 
     // Read input files:
@@ -50,21 +62,30 @@ fn main() {
     let stylesheet = css::parse(css);
     let style_root = style::style_tree(&root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_root, initial_containing_block);
-    let canvas = painting::paint(&layout_root, initial_containing_block.content);
 
     // Create the output file:
-    let filename = matches.opt_str("o").unwrap_or("output.png".to_string());
-    let file = File::create(&Path::new(&*filename)).unwrap();
+    let default_filename = if png { "output.png" } else { "output.pdf" };
+    let filename = matches.opt_str("o").unwrap_or(default_filename.to_string());
+    let mut file = File::create(&Path::new(&*filename)).unwrap();
 
-    // Save an image:
-    let (w, h) = (canvas.width as u32, canvas.height as u32);
-    let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
-    let img = image::ImageBuffer::from_fn(w, h, Box::new(|&: x: u32, y: u32| buffer[(y * w + x) as usize]));
+    let result_ok;
+    if png {
+        let canvas = painting::paint(&layout_root, initial_containing_block.content);
 
-    let result = image::ImageRgba8(img).save(file, image::PNG);
-    match result {
-        Ok(_) => println!("Saved output as {}", filename),
-        Err(_) => println!("Error saving output as {}", filename)
+        // Save an image:
+        let (w, h) = (canvas.width as u32, canvas.height as u32);
+        let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
+        let img = image::ImageBuffer::from_fn(w, h, Box::new(|&: x: u32, y: u32| buffer[(y * w + x) as usize]));
+
+        result_ok = image::ImageRgba8(img).save(file, image::PNG).is_ok();
+    } else {
+        result_ok = pdf::render(&layout_root, initial_containing_block.content, &mut file).is_ok();
+    }
+
+    if result_ok {
+        println!("Saved output as {}", filename)
+    } else {
+        println!("Error saving output as {}", filename)
     }
 
     // Debug output:
