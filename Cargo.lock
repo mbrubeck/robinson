@@ -3,7 +3,7 @@ name = "robinson"
 version = "0.0.1"
 dependencies = [
  "getopts 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "image 0.2.0-alpha.4 (git+https://github.com/PistonDevelopers/image)",
+ "image 0.2.0-alpha.8 (git+https://github.com/PistonDevelopers/image)",
 ]
 
 [[package]]
@@ -13,22 +13,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "image"
-version = "0.2.0-alpha.4"
-source = "git+https://github.com/PistonDevelopers/image#4c9e7a71745e8b3476e6be048ca4719a1099c64f"
+version = "0.2.0-alpha.8"
+source = "git+https://github.com/PistonDevelopers/image#da11929ddd89943c4abdc3fa3baf5d4419b841ed"
 dependencies = [
- "num 0.1.8 (git+https://github.com/rust-lang/num)",
+ "num 0.1.10 (git+https://github.com/rust-lang/num)",
 ]
 
 [[package]]
 name = "num"
-version = "0.1.8"
-source = "git+https://github.com/rust-lang/num#cbf04cf6646f99b21e5262a99791ee85063203ba"
+version = "0.1.10"
+source = "git+https://github.com/rust-lang/num#c05cd530dbc1cc2e56f936524400b368e07ee5cb"
 dependencies = [
- "rustc-serialize 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "rustc-serialize"
-version = "0.2.7"
+version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
