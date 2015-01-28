@@ -20,13 +20,13 @@ pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
 }
 
 #[derive(Show)]
-enum DisplayCommand {
+pub enum DisplayCommand {
     SolidColor(Color, Rect),
 }
 
 type DisplayList = Vec<DisplayCommand>;
 
-fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
+pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
     let mut list = Vec::new();
     render_layout_box(&mut list, layout_root);
     return list;
