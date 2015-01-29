@@ -11,7 +11,7 @@ name = "robinson"
 path = "src/main.rs"
 
 [dependencies]
-getopts = "0.1.4"
+getopts = "0.2.0"
 
 [dependencies.image]
 git = "https://github.com/PistonDevelopers/image"

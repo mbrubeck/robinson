@@ -3,7 +3,7 @@
 extern crate getopts;
 extern crate image;
 
-use getopts::{optopt,getopts};
+use getopts::Options;
 use std::default::Default;
 use std::old_io::fs::File;
 use std::os::args;
@@ -18,13 +18,13 @@ mod pdf;
 
 fn main() {
     // Parse command-line options:
-    let opts = [
-        optopt("h", "html", "HTML document", "FILENAME"),
-        optopt("c", "css", "CSS stylesheet", "FILENAME"),
-        optopt("o", "output", "Output file", "FILENAME"),
-        optopt("f", "format", "Output file format", "png | pdf"),
-    ];
-    let matches = match getopts(args().tail(), &opts) {
+    let mut opts = Options::new();
+    opts.optopt("h", "html", "HTML document", "FILENAME");
+    opts.optopt("c", "css", "CSS stylesheet", "FILENAME");
+    opts.optopt("o", "output", "Output file", "FILENAME");
+    opts.optopt("f", "format", "Output file format", "png | pdf");
+
+    let matches = match opts.parse(args().tail()) {
         Ok(m) => m,
         Err(f) => panic!(f.to_string())
     };

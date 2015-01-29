@@ -2,13 +2,13 @@
 name = "robinson"
 version = "0.0.1"
 dependencies = [
- "getopts 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "getopts 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.2.0-alpha.8 (git+https://github.com/PistonDevelopers/image)",
 ]
 
 [[package]]
 name = "getopts"
-version = "0.1.4"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
