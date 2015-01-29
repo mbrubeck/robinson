@@ -203,7 +203,6 @@ impl Parser {
         Value::Length(self.parse_float(), self.parse_unit())
     }
 
-    #[allow(unstable)]
     fn parse_float(&mut self) -> f32 {
         let s = self.consume_while(|c| match c {
             '0'...'9' | '.' => true,
@@ -213,7 +212,6 @@ impl Parser {
         f.unwrap()
     }
 
-    #[allow(unstable)]
     fn parse_unit(&mut self) -> Unit {
         match &*self.parse_identifier().into_ascii_lowercase() {
             "px" => Unit::Px,
@@ -230,7 +228,6 @@ impl Parser {
             a: 255 })
     }
 
-    #[allow(unstable)]
     /// Parse two hexadecimal digits.
     fn parse_hex_pair(&mut self) -> u8 {
         let s = &self.input[self.pos .. self.pos + 2];
@@ -258,7 +255,6 @@ impl Parser {
         return result;
     }
 
-    #[allow(unstable)]
     /// Return the current character, and advance self.pos to the next character.
     fn consume_char(&mut self) -> char {
         let range = self.input.char_range_at(self.pos);
@@ -266,7 +262,6 @@ impl Parser {
         return range.ch;
     }
 
-    #[allow(unstable)]
     /// Read the current character without consuming it.
     fn next_char(&self) -> char {
         self.input.char_at(self.pos)

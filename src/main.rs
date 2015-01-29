@@ -1,10 +1,11 @@
+#![feature(core, std_misc, collections, path, io, os)]
 
 extern crate getopts;
 extern crate image;
 
 use getopts::{optopt,getopts};
 use std::default::Default;
-use std::io::fs::File;
+use std::old_io::fs::File;
 use std::os::args;
 
 mod css;
@@ -15,7 +16,6 @@ mod style;
 mod painting;
 mod pdf;
 
-#[allow(unstable)]
 fn main() {
     // Parse command-line options:
     let opts = [

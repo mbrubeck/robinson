@@ -13,7 +13,6 @@
 use dom;
 use std::collections::HashMap;
 
-#[allow(unstable)]
 /// Parse an HTML document and return the root element.
 pub fn parse(source: String) -> dom::Node {
     let mut nodes = Parser { pos: 0, input: source }.parse_nodes();
@@ -132,7 +131,6 @@ impl Parser {
         return result;
     }
 
-    #[allow(unstable)]
     /// Return the current character, and advance self.pos to the next character.
     fn consume_char(&mut self) -> char {
         let range = self.input.char_range_at(self.pos);
@@ -140,7 +138,6 @@ impl Parser {
         return range.ch;
     }
 
-    #[allow(unstable)]
     /// Read the current character without consuming it.
     fn next_char(&self) -> char {
         self.input.char_at(self.pos)

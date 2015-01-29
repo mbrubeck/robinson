@@ -1,7 +1,5 @@
-#![allow(unstable)]
-
-use std::io::fs::File;
-use std::io::{Writer, Seek, IoResult};
+use std::old_io::fs::File;
+use std::old_io::{Writer, Seek, IoResult};
 use layout::{LayoutBox, Rect};
 use painting::{DisplayCommand, build_display_list};
 
@@ -51,7 +49,7 @@ const PAGES_OBJECT_ID: usize = 2;
 impl<'a, W: Writer + Seek> Pdf<'a, W> {
     fn new(output: &'a mut W) -> IoResult<Pdf<'a, W>> {
         // FIXME: Find out the lowest version that contains the features we’re using.
-        try!(output.write(b"%PDF-1.7\n%\xB5\xED\xAE\xFB\n"));
+        try!(output.write_all(b"%PDF-1.7\n%\xB5\xED\xAE\xFB\n"));
         Ok(Pdf {
             output: output,
             // Object ID 0 is special in PDF.
