@@ -19,7 +19,7 @@ pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
     return canvas;
 }
 
-#[derive(Show)]
+#[derive(Debug)]
 pub enum DisplayCommand {
     SolidColor(Color, Rect),
 }
