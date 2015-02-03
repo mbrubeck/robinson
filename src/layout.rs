@@ -92,7 +92,7 @@ fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
     });
 
     // Create the descendant boxes.
-    for child in style_node.children.iter() {
+    for child in &style_node.children {
         match child.display() {
             Display::Block => root.children.push(build_layout_tree(child)),
             Display::Inline => root.get_inline_container().children.push(build_layout_tree(child)),
@@ -251,7 +251,7 @@ impl<'a> LayoutBox<'a> {
     /// Sets `self.dimensions.height` to the total content height.
     fn layout_block_children(&mut self) {
         let d = &mut self.dimensions;
-        for child in self.children.iter_mut() {
+        for child in &mut self.children {
             child.layout(*d);
             // Increment the height so each child is laid out below the previous one.
             d.content.height = d.content.height + child.dimensions.margin_box().height;

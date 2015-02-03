@@ -16,8 +16,8 @@ pub fn render(layout_root: &LayoutBox, bounds: Rect, file: &mut File) -> IoResul
     let mut pdf = try!(Pdf::new(file));
     // We map CSS pt to Poscript points (which is the default length unit in PDF).
     try!(pdf.render_page(px_to_pt(bounds.width), px_to_pt(bounds.height), |output| {
-        for item in display_list.iter() {
-            try!(render_item(item, output));
+        for item in display_list {
+            try!(render_item(&item, output));
         }
         Ok(())
     }));
@@ -127,7 +127,7 @@ impl<'a, W: Writer + Seek> Pdf<'a, W> {
             try!(write!(pdf.output, "<<  /Type /Pages\n"));
             try!(write!(pdf.output, "    /Count {}\n", pdf.page_objects_ids.len()));
             try!(write!(pdf.output, "    /Kids [ "));
-            for &page_object_id in pdf.page_objects_ids.iter() {
+            for &page_object_id in &pdf.page_objects_ids {
                 try!(write!(pdf.output, "{} 0 R ", page_object_id));
             }
             try!(write!(pdf.output, "]\n"));
@@ -146,7 +146,7 @@ impl<'a, W: Writer + Seek> Pdf<'a, W> {
         // Object 0 is special
         try!(write!(self.output, "0000000000 65535 f \n"));
         // Use [1..] to skip object 0 in self.object_offsets.
-        for &offset in self.object_offsets[1..].iter() {
+        for &offset in &self.object_offsets[1..] {
             assert!(offset >= 0);
             try!(write!(self.output, "{:010} 00000 n \n", offset));
         }
