@@ -208,8 +208,7 @@ impl Parser {
             '0'...'9' | '.' => true,
             _ => false
         });
-        let f: Option<f32> = FromStr::from_str(&*s);
-        f.unwrap()
+        FromStr::from_str(&*s).unwrap()
     }
 
     fn parse_unit(&mut self) -> Unit {
