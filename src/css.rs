@@ -5,7 +5,6 @@
 
 use std::ascii::OwnedAsciiExt; // for `into_ascii_lowercase`
 use std::iter::IteratorExt; // for `count`
-use std::str::FromStr;
 use std::num::FromStrRadix;
 
 // Data structures:
@@ -208,7 +207,7 @@ impl Parser {
             '0'...'9' | '.' => true,
             _ => false
         });
-        FromStr::from_str(&*s).unwrap()
+        s.parse().unwrap()
     }
 
     fn parse_unit(&mut self) -> Unit {
