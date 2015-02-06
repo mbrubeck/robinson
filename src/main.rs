@@ -3,7 +3,6 @@
 extern crate getopts;
 extern crate image;
 
-use getopts::Options;
 use std::default::Default;
 use std::old_io::fs::File;
 
@@ -17,7 +16,7 @@ mod pdf;
 
 fn main() {
     // Parse command-line options:
-    let mut opts = Options::new();
+    let mut opts = getopts::Options::new();
     opts.optopt("h", "html", "HTML document", "FILENAME");
     opts.optopt("c", "css", "CSS stylesheet", "FILENAME");
     opts.optopt("o", "output", "Output file", "FILENAME");
@@ -86,8 +85,4 @@ fn main() {
     } else {
         println!("Error saving output as {}", filename)
     }
-
-    // Debug output:
-    // println!("{}", layout_root.dimensions);
-    // println!("{}", display_list);
 }
