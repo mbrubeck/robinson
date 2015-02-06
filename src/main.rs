@@ -1,4 +1,4 @@
-#![feature(core, std_misc, collections, env, path, io, os)]
+#![feature(core, std_misc, collections, env, path, io)]
 
 extern crate getopts;
 extern crate image;
@@ -6,7 +6,6 @@ extern crate image;
 use getopts::Options;
 use std::default::Default;
 use std::old_io::fs::File;
-use std::env::args;
 
 mod css;
 mod dom;
@@ -24,8 +23,7 @@ fn main() {
     opts.optopt("o", "output", "Output file", "FILENAME");
     opts.optopt("f", "format", "Output file format", "png | pdf");
 
-    let params: Vec<String> = args().skip(1).filter_map(|s| s.into_string().ok()).collect();
-    let matches = match opts.parse(&*params) {
+    let matches = match opts.parse(std::env::args().skip(1)) {
         Ok(m) => m,
         Err(f) => panic!(f.to_string())
     };
