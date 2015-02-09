@@ -75,7 +75,7 @@ fn main() {
         let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
         let img = image::ImageBuffer::from_fn(w, h, Box::new(|&: x: u32, y: u32| buffer[(y * w + x) as usize]));
 
-        result_ok = image::ImageRgba8(img).save(file, image::PNG).is_ok();
+        result_ok = image::ImageRgba8(img).save(&mut file, image::PNG).is_ok();
     } else {
         result_ok = pdf::render(&layout_root, initial_containing_block.content, &mut file).is_ok();
     }
