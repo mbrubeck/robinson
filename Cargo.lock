@@ -2,13 +2,13 @@
 name = "robinson"
 version = "0.0.1"
 dependencies = [
- "getopts 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "getopts 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.2.0-alpha.9 (git+https://github.com/PistonDevelopers/image)",
 ]
 
 [[package]]
 name = "getopts"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "log 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -17,14 +17,14 @@ dependencies = [
 [[package]]
 name = "image"
 version = "0.2.0-alpha.9"
-source = "git+https://github.com/PistonDevelopers/image#b7aff0a1ad2b6b0bdc04c1a7731d502606cbafb3"
+source = "git+https://github.com/PistonDevelopers/image#22d6ff19129fb4a2c44d6388e4efa7eb20f26545"
 dependencies = [
  "num 0.1.12 (git+https://github.com/rust-lang/num)",
 ]
 
 [[package]]
 name = "libc"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -46,7 +46,7 @@ name = "rand"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "libc 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
