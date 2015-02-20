@@ -37,7 +37,7 @@ fn main() {
     };
 
     // Read input files:
-    let read_source = |&: arg_filename: Option<String>, default_filename: &str| {
+    let read_source = |arg_filename: Option<String>, default_filename: &str| {
         let path = match arg_filename {
             Some(ref filename) => &**filename,
             None => default_filename,
@@ -73,7 +73,7 @@ fn main() {
         // Save an image:
         let (w, h) = (canvas.width as u32, canvas.height as u32);
         let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
-        let img = image::ImageBuffer::from_fn(w, h, Box::new(|&: x: u32, y: u32| buffer[(y * w + x) as usize]));
+        let img = image::ImageBuffer::from_fn(w, h, Box::new(move |x: u32, y: u32| buffer[(y * w + x) as usize]));
 
         result_ok = image::ImageRgba8(img).save(&mut file, image::PNG).is_ok();
     } else {
