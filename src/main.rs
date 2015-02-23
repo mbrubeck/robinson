@@ -32,7 +32,7 @@ fn main() {
         Some(format) => match &*format {
             "png" => true,
             "pdf" => false,
-            _ => panic!("Unknow output format: {}", format),
+            _ => panic!("Unknown output format: {}", format),
         }
     };
 
