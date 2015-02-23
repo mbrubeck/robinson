@@ -1,4 +1,4 @@
-#![feature(core, std_misc, collections, env, path, io)]
+#![feature(core, std_misc, collections, env, old_io, old_path)]
 
 extern crate getopts;
 extern crate image;
@@ -73,7 +73,7 @@ fn main() {
         // Save an image:
         let (w, h) = (canvas.width as u32, canvas.height as u32);
         let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
-        let img = image::ImageBuffer::from_fn(w, h, Box::new(move |x: u32, y: u32| buffer[(y * w + x) as usize]));
+        let img = image::ImageBuffer::from_fn(w, h, move |x: u32, y: u32| buffer[(y * w + x) as usize]);
 
         result_ok = image::ImageRgba8(img).save(&mut file, image::PNG).is_ok();
     } else {
