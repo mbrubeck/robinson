@@ -72,8 +72,10 @@ fn main() {
 
         // Save an image:
         let (w, h) = (canvas.width as u32, canvas.height as u32);
-        let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
-        let img = image::ImageBuffer::from_fn(w, h, move |x: u32, y: u32| buffer[(y * w + x) as usize]);
+        let img = image::ImageBuffer::from_fn(w, h, move |x, y| {
+            let color = canvas.pixels[(y * w + x) as usize];
+            image::Pixel::from_channels(color.r, color.g, color.b, color.a)
+        });
 
         result_ok = image::ImageRgba8(img).save(&mut file, image::PNG).is_ok();
     } else {
