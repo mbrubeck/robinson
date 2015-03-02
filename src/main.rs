@@ -1,4 +1,4 @@
-#![feature(core, std_misc, collections, env, old_io, old_path)]
+#![feature(core, std_misc, collections, old_io, old_path)]
 
 extern crate getopts;
 extern crate image;
