@@ -1,6 +1,5 @@
 use std::fs::File;
-use std::io::{Read, Seek, Write, self};
-use std::io::SeekFrom::Current;
+use std::io::{Read, Seek, SeekFrom, Write, self};
 use layout::{LayoutBox, Rect};
 use painting::{DisplayCommand, build_display_list};
 
@@ -60,6 +59,11 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
         })
     }
 
+    /// Return the current read/write position in the output file.
+    fn tell(&self) -> io::Result<u64> {
+        self.output.seek(SeekFrom::Current(0))
+    }
+
     fn render_page<F>(&mut self, width: f32, height: f32, render_contents: F) -> io::Result<()>
     where F: FnOnce(&mut W) -> io::Result<()> {
         let (contents_object_id, content_length) =
@@ -69,11 +73,11 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
             try!(write!(pdf.output, ">>\n"));
             try!(write!(pdf.output, "stream\n"));
 
-            let start = try!(pdf.output.seek(Current(0)));
+            let start = try!(pdf.tell());
             try!(write!(pdf.output, "/DeviceRGB cs /DeviceRGB CS\n"));
             try!(write!(pdf.output, "0.75 0 0 -0.75 0 {} cm\n", height));
-            try!(render_contents(pdf.output));
-            let end = try!(pdf.output.seek(Current(0)));
+            try!(render_contents(&mut pdf.output));
+            let end = try!(pdf.tell());
 
             try!(write!(pdf.output, "endstream\n"));
             Ok((contents_object_id, end - start))
@@ -99,7 +103,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
     where F: FnOnce(usize, &mut Pdf<W>) -> io::Result<T> {
         let id = self.object_offsets.len();
         // `as i64` here would only overflow for PDF files bigger than 2**63 bytes
-        self.object_offsets.push(try!(self.output.seek(Current(0))) as i64);
+        self.object_offsets.push(try!(self.tell()) as i64);
         self._write_object(id, move |pdf| write_content(id, pdf))
     }
 
@@ -107,7 +111,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
     where F: FnOnce(&mut Pdf<W>) -> io::Result<T> {
         assert!(self.object_offsets[id] == -1);
         // `as i64` here would only overflow for PDF files bigger than 2**63 bytes
-        self.object_offsets[id] = try!(self.output.seek(Current(0))) as i64;
+        self.object_offsets[id] = try!(self.tell()) as i64;
         self._write_object(id, write_content)
     }
 
@@ -141,7 +145,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
             try!(write!(pdf.output, ">>\n"));
             Ok(())
         }));
-        let startxref = try!(self.output.seek(Current(0)));
+        let startxref = try!(self.tell());
         try!(write!(self.output, "xref\n"));
         try!(write!(self.output, "0 {}\n", self.object_offsets.len()));
         // Object 0 is special
