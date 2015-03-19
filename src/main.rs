@@ -1,4 +1,5 @@
 #![feature(core, std_misc, collections, old_io, old_path)]
+#![allow(deprecated)] // for old_io
 
 extern crate getopts;
 extern crate image;
