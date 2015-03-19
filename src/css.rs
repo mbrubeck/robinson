@@ -240,7 +240,7 @@ impl Parser {
 
     /// Consume and discard zero or more whitespace characters.
     fn consume_whitespace(&mut self) {
-        self.consume_while(CharExt::is_whitespace);
+        self.consume_while(char::is_whitespace);
     }
 
     /// Consume characters until `test` returns false.
