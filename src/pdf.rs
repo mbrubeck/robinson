@@ -60,7 +60,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
     }
 
     /// Return the current read/write position in the output file.
-    fn tell(&self) -> io::Result<u64> {
+    fn tell(&mut self) -> io::Result<u64> {
         self.output.seek(SeekFrom::Current(0))
     }
 
