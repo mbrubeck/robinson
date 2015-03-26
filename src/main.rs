@@ -6,6 +6,7 @@ extern crate image;
 use std::default::Default;
 use std::io::Read;
 use std::fs::File;
+use std::path::Path;
 
 mod css;
 mod dom;
