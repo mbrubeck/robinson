@@ -1,4 +1,4 @@
-#![feature(core, std_misc, collections)]
+#![feature(collections, core, io, std_misc, str_char)]
 
 extern crate getopts;
 extern crate image;
@@ -45,7 +45,7 @@ fn main() {
             None => default_filename,
         };
         let mut str = String::new();
-        File::open(&Path::new(path)).unwrap().read_to_string(&mut str);
+        File::open(&Path::new(path)).unwrap().read_to_string(&mut str).unwrap();
         str
     };
     let html = read_source(matches.opt_str("h"), "examples/test.html");

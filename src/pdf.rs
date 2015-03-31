@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{Read, Seek, SeekFrom, Write, self};
+use std::io::{Seek, SeekFrom, Write, self};
 use layout::{LayoutBox, Rect};
 use painting::{DisplayCommand, build_display_list};
 
