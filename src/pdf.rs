@@ -38,7 +38,7 @@ fn render_item<W: Write>(item: &DisplayCommand, output: &mut W) -> io::Result<()
 
 
 struct Pdf<'a, W: 'a + Write + Seek> {
-    output: &mut 'a W,
+    output: &'a mut W,
     object_offsets: Vec<i64>,
     page_objects_ids: Vec<usize>,
 }
