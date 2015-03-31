@@ -37,8 +37,8 @@ fn render_item<W: Write>(item: &DisplayCommand, output: &mut W) -> io::Result<()
 }
 
 
-struct Pdf<W: Write + Seek> {
-    output: W,
+struct Pdf<'a, W: 'a + Write + Seek> {
+    output: &mut 'a W,
     object_offsets: Vec<i64>,
     page_objects_ids: Vec<usize>,
 }
@@ -46,8 +46,8 @@ struct Pdf<W: Write + Seek> {
 const ROOT_OBJECT_ID: usize = 1;
 const PAGES_OBJECT_ID: usize = 2;
 
-impl<W: Write + Seek> Pdf<W> {
-    fn new(mut output: W) -> io::Result<Pdf<W>> {
+impl<'a, W: Write + Seek> Pdf<'a, W> {
+    fn new(output: &'a mut W) -> io::Result<Pdf<'a, W>> {
         // FIXME: Find out the lowest version that contains the features we’re using.
         try!(output.write_all(b"%PDF-1.7\n%\xB5\xED\xAE\xFB\n"));
         Ok(Pdf {
@@ -69,30 +69,30 @@ impl<W: Write + Seek> Pdf<W> {
         let (contents_object_id, content_length) =
         try!(self.write_new_object(move |contents_object_id, pdf| {
             // Guess the ID of the next object. (We’ll assert it below.)
-            try!(write!(&mut pdf.output, "<<  /Length {} 0 R\n", contents_object_id + 1));
-            try!(write!(&mut pdf.output, ">>\n"));
-            try!(write!(&mut pdf.output, "stream\n"));
+            try!(write!(pdf.output, "<<  /Length {} 0 R\n", contents_object_id + 1));
+            try!(write!(pdf.output, ">>\n"));
+            try!(write!(pdf.output, "stream\n"));
 
             let start = try!(pdf.tell());
-            try!(write!(&mut pdf.output, "/DeviceRGB cs /DeviceRGB CS\n"));
-            try!(write!(&mut pdf.output, "0.75 0 0 -0.75 0 {} cm\n", height));
-            try!(render_contents(&mut pdf.output));
+            try!(write!(pdf.output, "/DeviceRGB cs /DeviceRGB CS\n"));
+            try!(write!(pdf.output, "0.75 0 0 -0.75 0 {} cm\n", height));
+            try!(render_contents(pdf.output));
             let end = try!(pdf.tell());
 
-            try!(write!(&mut pdf.output, "endstream\n"));
+            try!(write!(pdf.output, "endstream\n"));
             Ok((contents_object_id, end - start))
         }));
         try!(self.write_new_object(|length_object_id, pdf| {
             assert!(length_object_id == contents_object_id + 1);
-            write!(&mut pdf.output, "{}\n", content_length)
+            write!(pdf.output, "{}\n", content_length)
         }));
         let page_object_id = try!(self.write_new_object(|page_object_id, pdf| {
-            try!(write!(&mut pdf.output, "<<  /Type /Page\n"));
-            try!(write!(&mut pdf.output, "    /Parent {} 0 R\n", PAGES_OBJECT_ID));
-            try!(write!(&mut pdf.output, "    /Resources << >>\n"));
-            try!(write!(&mut pdf.output, "    /MediaBox [ 0 0 {} {} ]\n", width, height));
-            try!(write!(&mut pdf.output, "    /Contents {} 0 R\n", contents_object_id));
-            try!(write!(&mut pdf.output, ">>\n"));
+            try!(write!(pdf.output, "<<  /Type /Page\n"));
+            try!(write!(pdf.output, "    /Parent {} 0 R\n", PAGES_OBJECT_ID));
+            try!(write!(pdf.output, "    /Resources << >>\n"));
+            try!(write!(pdf.output, "    /MediaBox [ 0 0 {} {} ]\n", width, height));
+            try!(write!(pdf.output, "    /Contents {} 0 R\n", contents_object_id));
+            try!(write!(pdf.output, ">>\n"));
             Ok(page_object_id)
         }));
         self.page_objects_ids.push(page_object_id);
@@ -119,9 +119,9 @@ impl<W: Write + Seek> Pdf<W> {
 
     fn _write_object<F, T>(&mut self, id: usize, write_content: F) -> io::Result<T>
     where F: FnOnce(&mut Pdf<W>) -> io::Result<T> {
-        try!(write!(&mut self.output, "{} 0 obj\n", id));
+        try!(write!(self.output, "{} 0 obj\n", id));
         let result = try!(write_content(self));
-        try!(write!(&mut self.output, "endobj\n"));
+        try!(write!(self.output, "endobj\n"));
         Ok(result)
     }
 
@@ -131,39 +131,39 @@ impl<W: Write + Seek> Pdf<W> {
 
     fn _finish(&mut self) -> io::Result<()> {
         try!(self.write_object_with_id(PAGES_OBJECT_ID, |pdf| {
-            try!(write!(&mut pdf.output, "<<  /Type /Pages\n"));
-            try!(write!(&mut pdf.output, "    /Count {}\n", pdf.page_objects_ids.len()));
-            try!(write!(&mut pdf.output, "    /Kids [ "));
+            try!(write!(pdf.output, "<<  /Type /Pages\n"));
+            try!(write!(pdf.output, "    /Count {}\n", pdf.page_objects_ids.len()));
+            try!(write!(pdf.output, "    /Kids [ "));
             for &page_object_id in &pdf.page_objects_ids {
-                try!(write!(&mut pdf.output, "{} 0 R ", page_object_id));
+                try!(write!(pdf.output, "{} 0 R ", page_object_id));
             }
-            try!(write!(&mut pdf.output, "]\n"));
-            try!(write!(&mut pdf.output, ">>\n"));
+            try!(write!(pdf.output, "]\n"));
+            try!(write!(pdf.output, ">>\n"));
             Ok(())
         }));
         try!(self.write_object_with_id(ROOT_OBJECT_ID, |pdf| {
-            try!(write!(&mut pdf.output, "<<  /Type /Catalog\n"));
-            try!(write!(&mut pdf.output, "    /Pages {} 0 R\n", PAGES_OBJECT_ID));
-            try!(write!(&mut pdf.output, ">>\n"));
+            try!(write!(pdf.output, "<<  /Type /Catalog\n"));
+            try!(write!(pdf.output, "    /Pages {} 0 R\n", PAGES_OBJECT_ID));
+            try!(write!(pdf.output, ">>\n"));
             Ok(())
         }));
         let startxref = try!(self.tell());
-        try!(write!(&mut self.output, "xref\n"));
-        try!(write!(&mut self.output, "0 {}\n", self.object_offsets.len()));
+        try!(write!(self.output, "xref\n"));
+        try!(write!(self.output, "0 {}\n", self.object_offsets.len()));
         // Object 0 is special
-        try!(write!(&mut self.output, "0000000000 65535 f \n"));
+        try!(write!(self.output, "0000000000 65535 f \n"));
         // Use [1..] to skip object 0 in self.object_offsets.
         for &offset in &self.object_offsets[1..] {
             assert!(offset >= 0);
-            try!(write!(&mut self.output, "{:010} 00000 n \n", offset));
+            try!(write!(self.output, "{:010} 00000 n \n", offset));
         }
-        try!(write!(&mut self.output, "trailer\n"));
-        try!(write!(&mut self.output, "<<  /Size {}\n", self.object_offsets.len()));
-        try!(write!(&mut self.output, "    /Root {} 0 R\n", ROOT_OBJECT_ID));
-        try!(write!(&mut self.output, ">>\n"));
-        try!(write!(&mut self.output, "startxref\n"));
-        try!(write!(&mut self.output, "{}\n", startxref));
-        try!(write!(&mut self.output, "%%EOF\n"));
+        try!(write!(self.output, "trailer\n"));
+        try!(write!(self.output, "<<  /Size {}\n", self.object_offsets.len()));
+        try!(write!(self.output, "    /Root {} 0 R\n", ROOT_OBJECT_ID));
+        try!(write!(self.output, ">>\n"));
+        try!(write!(self.output, "startxref\n"));
+        try!(write!(self.output, "{}\n", startxref));
+        try!(write!(self.output, "%%EOF\n"));
         Ok(())
     }
 }
