@@ -24,7 +24,7 @@ pub enum DisplayCommand {
     SolidColor(Color, Rect),
 }
 
-type DisplayList = Vec<DisplayCommand>;
+pub type DisplayList = Vec<DisplayCommand>;
 
 pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
     let mut list = Vec::new();

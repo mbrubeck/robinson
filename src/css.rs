@@ -4,7 +4,6 @@
 //! hand-rolled parser with one based on a library or parser generator.
 
 use std::ascii::OwnedAsciiExt; // for `into_ascii_lowercase`
-use std::iter::IteratorExt; // for `count`
 use std::num::FromStrRadix;
 
 // Data structures:
