@@ -3,7 +3,7 @@
 //! To support more CSS syntax, it would probably be easiest to replace this
 //! hand-rolled parser with one based on a library or parser generator.
 
-use std::ascii::OwnedAsciiExt; // for `into_ascii_lowercase`
+use std::ascii::AsciiExt; // for `to_ascii_lowercase`
 
 // Data structures:
 
@@ -209,7 +209,7 @@ impl Parser {
     }
 
     fn parse_unit(&mut self) -> Unit {
-        match &*self.parse_identifier().into_ascii_lowercase() {
+        match &*self.parse_identifier().to_ascii_lowercase() {
             "px" => Unit::Px,
             _ => panic!("unrecognized unit")
         }
