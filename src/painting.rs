@@ -1,7 +1,6 @@
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
 use css::{Value, Color};
 use std::iter::repeat;
-use std::num::Float;
 
 pub struct Canvas {
     pub pixels: Vec<Color>,
@@ -129,9 +128,11 @@ impl Canvas {
     }
 }
 
-trait FloatClamp : Float {
-    fn clamp(self, lower: Self, upper: Self) -> Self {
+trait Clamp {
+    fn clamp(self, lower: Self, upper: Self) -> Self;
+}
+impl Clamp for f32 {
+    fn clamp(self, lower: f32, upper: f32) -> f32 {
         self.max(lower).min(upper)
     }
 }
-impl<T: Float> FloatClamp for T {}

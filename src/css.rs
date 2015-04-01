@@ -4,7 +4,6 @@
 //! hand-rolled parser with one based on a library or parser generator.
 
 use std::ascii::OwnedAsciiExt; // for `into_ascii_lowercase`
-use std::num::FromStrRadix;
 
 // Data structures:
 
@@ -229,7 +228,7 @@ impl Parser {
     fn parse_hex_pair(&mut self) -> u8 {
         let s = &self.input[self.pos .. self.pos + 2];
         self.pos = self.pos + 2;
-        FromStrRadix::from_str_radix(s, 0x10).unwrap()
+        u8::from_str_radix(s, 16).unwrap()
     }
 
     /// Parse a property name or keyword.
