@@ -12,4 +12,6 @@ path = "src/main.rs"
 
 [dependencies]
 getopts = "0.2.3"
-image = "0.3.4"
+
+[dependencies.image]
+git = "https://github.com/PistonDevelopers/image/"

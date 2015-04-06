@@ -46,7 +46,7 @@ Coming soon, I hope:
 Instructions
 ------------
 
-1. [Install Cargo and Rust.](http://doc.crates.io/)
+1. [Install Rust from the *Nightly* channel.](http://www.rust-lang.org/install.html)
 
 2. Clone the robinson source code from https://github.com/mbrubeck/robinson
 
@@ -59,4 +59,5 @@ executable to change the input files:
     ./target/robinson --html file.html --css file.css
 
 The rendered page will be saved to a file named `output.png`.  To change the
-output filename, use the `-o` option.
+output filename, use the `-o` option.  To switch to PDF output, use add
+`--format pdf`.
