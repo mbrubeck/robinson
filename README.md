@@ -52,6 +52,9 @@ Instructions
 
 3. Run `cargo build` to build robinson, and `cargo run` to run it.
 
+To build and run with optimizations enabled, use `cargo build --release` and
+`cargo run --release`.
+
 By default, robinson will load test.html and test.css from the `examples`
 directory.  You can use the `--html` and `--css` arguments to the robinson
 executable to change the input files:
