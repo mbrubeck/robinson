@@ -1,4 +1,4 @@
-#![feature(core, str_char)]
+#![feature(core)]
 
 extern crate getopts;
 extern crate image;

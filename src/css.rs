@@ -253,14 +253,16 @@ impl Parser {
 
     /// Return the current character, and advance self.pos to the next character.
     fn consume_char(&mut self) -> char {
-        let range = self.input.char_range_at(self.pos);
-        self.pos = range.next;
-        return range.ch;
+        let mut iter = self.input[self.pos..].char_indices();
+        let (_, cur_char) = iter.next().unwrap();
+        let (next_pos, _) = iter.next().unwrap_or((1, ' '));
+        self.pos += next_pos;
+        return cur_char;
     }
 
     /// Read the current character without consuming it.
     fn next_char(&self) -> char {
-        self.input.char_at(self.pos)
+        self.input[self.pos..].chars().next().unwrap()
     }
 
     /// Return true if all input is consumed.
