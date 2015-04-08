@@ -4,7 +4,6 @@ use style::{StyledNode, Display};
 use css::Value::{Keyword, Length};
 use css::Unit::Px;
 use std::default::Default;
-use std::iter::AdditiveIterator; // for `sum`
 
 pub use self::BoxType::{AnonymousBlock, InlineNode, BlockNode};
 
@@ -149,8 +148,8 @@ impl<'a> LayoutBox<'a> {
         let padding_left = style.lookup("padding-left", "padding", &zero);
         let padding_right = style.lookup("padding-right", "padding", &zero);
 
-        let total = [&margin_left, &margin_right, &border_left, &border_right,
-                     &padding_left, &padding_right, &width].iter().map(|v| v.to_px()).sum();
+        let total = sum([&margin_left, &margin_right, &border_left, &border_right,
+                         &padding_left, &padding_right, &width].iter().map(|v| v.to_px()));
 
         // If width is not auto and the total is wider than the container, treat auto margins as 0.
         if width != auto && total > containing_block.content.width {
@@ -304,4 +303,8 @@ impl Dimensions {
     pub fn margin_box(self) -> Rect {
         self.border_box().expanded_by(self.margin)
     }
+}
+
+fn sum<I>(iter: I) -> f32 where I: Iterator<Item=f32> {
+    iter.fold(0., |a, b| a + b)
 }

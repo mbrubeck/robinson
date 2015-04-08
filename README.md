@@ -46,7 +46,7 @@ Coming soon, I hope:
 Instructions
 ------------
 
-1. [Install Rust from the *Nightly* channel.](http://www.rust-lang.org/install.html)
+1. [Install Rust 1.0 beta or newer.](http://www.rust-lang.org/install.html)
 
 2. Clone the robinson source code from https://github.com/mbrubeck/robinson
 

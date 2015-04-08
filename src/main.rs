@@ -1,5 +1,3 @@
-#![feature(core)]
-
 extern crate getopts;
 extern crate image;
 
