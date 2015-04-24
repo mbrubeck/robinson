@@ -1,6 +1,5 @@
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
 use css::{Value, Color};
-use std::iter::repeat;
 
 pub struct Canvas {
     pub pixels: Vec<Color>,
@@ -102,7 +101,7 @@ impl Canvas {
     fn new(width: usize, height: usize) -> Canvas {
         let white = Color { r: 255, g: 255, b: 255, a: 255 };
         return Canvas {
-            pixels: repeat(white).take(width * height).collect(),
+            pixels: vec![white; width * height],
             width: width,
             height: height,
         }

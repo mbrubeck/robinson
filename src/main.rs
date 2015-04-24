@@ -5,13 +5,13 @@ use std::default::Default;
 use std::io::Read;
 use std::fs::File;
 
-mod css;
-mod dom;
-mod html;
-mod layout;
-mod style;
-mod painting;
-mod pdf;
+pub mod css;
+pub mod dom;
+pub mod html;
+pub mod layout;
+pub mod style;
+pub mod painting;
+pub mod pdf;
 
 fn main() {
     // Parse command-line options:
