@@ -59,7 +59,7 @@ By default, robinson will load test.html and test.css from the `examples`
 directory.  You can use the `--html` and `--css` arguments to the robinson
 executable to change the input files:
 
-    ./target/robinson --html file.html --css file.css
+    ./target/debug/robinson --html examples/test.html --css examples/test.css
 
 The rendered page will be saved to a file named `output.png`.  To change the
 output filename, use the `-o` option.  To switch to PDF output, use add
