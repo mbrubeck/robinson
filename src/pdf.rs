@@ -1,4 +1,3 @@
-use std::fs::File;
 use std::io::{Seek, SeekFrom, Write, self};
 use layout::{LayoutBox, Rect};
 use painting::{DisplayCommand, build_display_list};
@@ -11,7 +10,9 @@ fn px_to_pt(value: f32) -> f32 {
 }
 
 
-pub fn render(layout_root: &LayoutBox, bounds: Rect, file: &mut File) -> io::Result<()> {
+pub fn render<W: Write + Seek>(layout_root: &LayoutBox, bounds: Rect, file: &mut W)
+    -> io::Result<()>
+{
     let display_list = build_display_list(layout_root);
     let mut pdf = try!(Pdf::new(file));
     // We map CSS pt to Poscript points (which is the default length unit in PDF).

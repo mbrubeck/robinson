@@ -2,7 +2,7 @@ extern crate getopts;
 extern crate image;
 
 use std::default::Default;
-use std::io::Read;
+use std::io::{Read, BufWriter};
 use std::fs::File;
 
 pub mod css;
@@ -50,7 +50,7 @@ fn main() {
 
     // Create the output file:
     let filename = str_arg("o", if png { "output.png" } else { "output.pdf" });
-    let mut file = File::create(&filename).unwrap();
+    let mut file = BufWriter::new(File::create(&filename).unwrap());
 
     // Write to the file:
     let ok = if png {
