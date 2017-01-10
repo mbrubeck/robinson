@@ -27,7 +27,7 @@ pub enum Display {
 impl<'a> StyledNode<'a> {
     /// Return the specified value of a property if it exists, otherwise `None`.
     pub fn value(&self, name: &str) -> Option<Value> {
-        self.specified_values.get(name).map(|v| v.clone())
+        self.specified_values.get(name).cloned()
     }
 
     /// Return the specified value of property `name`, or property `fallback_name` if that doesn't
@@ -79,7 +79,7 @@ fn specified_values(elem: &ElementData, stylesheet: &Stylesheet) -> PropertyMap 
             values.insert(declaration.name.clone(), declaration.value.clone());
         }
     }
-    return values;
+    values
 }
 
 /// A single CSS rule and the specificity of its most specific matching selector.
@@ -110,7 +110,7 @@ fn matches(elem: &ElementData, selector: &Selector) -> bool {
 fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> bool {
     // Check type selector
     if selector.tag_name.iter().any(|name| elem.tag_name != *name) {
-        return false;
+        return false
     }
 
     // Check ID selector

@@ -41,7 +41,7 @@ impl Parser {
             }
             nodes.push(self.parse_node());
         }
-        return nodes;
+        nodes
     }
 
     /// Parse a single node.
@@ -69,7 +69,7 @@ impl Parser {
         assert!(self.parse_tag_name() == tag_name);
         assert!(self.consume_char() == '>');
 
-        return dom::elem(tag_name, attrs, children);
+        dom::elem(tag_name, attrs, children)
     }
 
     /// Parse a tag or attribute name.
@@ -91,7 +91,7 @@ impl Parser {
             let (name, value) = self.parse_attr();
             attributes.insert(name, value);
         }
-        return attributes;
+        attributes
     }
 
     /// Parse a single name="value" pair.
@@ -99,7 +99,7 @@ impl Parser {
         let name = self.parse_tag_name();
         assert!(self.consume_char() == '=');
         let value = self.parse_attr_value();
-        return (name, value);
+        (name, value)
     }
 
     /// Parse a quoted value.
@@ -108,7 +108,7 @@ impl Parser {
         assert!(open_quote == '"' || open_quote == '\'');
         let value = self.consume_while(|c| c != open_quote);
         assert!(self.consume_char() == open_quote);
-        return value;
+        value
     }
 
     /// Parse a text node.
@@ -128,7 +128,7 @@ impl Parser {
         while !self.eof() && test(self.next_char()) {
             result.push(self.consume_char());
         }
-        return result;
+        result
     }
 
     /// Return the current character, and advance self.pos to the next character.
@@ -137,7 +137,7 @@ impl Parser {
         let (_, cur_char) = iter.next().unwrap();
         let (next_pos, _) = iter.next().unwrap_or((1, ' '));
         self.pos += next_pos;
-        return cur_char;
+        cur_char
     }
 
     /// Read the current character without consuming it.
