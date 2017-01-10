@@ -59,8 +59,7 @@ impl<'a> LayoutBox<'a> {
 
     fn get_style_node(&self) -> &'a StyledNode<'a> {
         match self.box_type {
-            BlockNode(node) => node,
-            InlineNode(node) => node,
+            BlockNode(node) | InlineNode(node) => node,
             AnonymousBlock => panic!("Anonymous block box has no style node")
         }
     }
@@ -74,7 +73,7 @@ pub fn layout_tree<'a>(node: &'a StyledNode<'a>, mut containing_block: Dimension
 
     let mut root_box = build_layout_tree(node);
     root_box.layout(containing_block);
-    return root_box;
+    root_box
 }
 
 /// Build the tree of LayoutBoxes, but don't perform any layout calculations yet.
@@ -94,7 +93,7 @@ fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
             Display::None => {} // Don't lay out nodes with `display: none;`
         }
     }
-    return root;
+    root
 }
 
 impl<'a> LayoutBox<'a> {

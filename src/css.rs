@@ -101,7 +101,7 @@ impl Parser {
             if self.eof() { break }
             rules.push(self.parse_rule());
         }
-        return rules;
+        rules
     }
 
     /// Parse a rule set: `<selectors> { <declarations> }`.
@@ -126,7 +126,7 @@ impl Parser {
         }
         // Return selectors with highest specificity first, for use in matching.
         selectors.sort_by(|a,b| b.specificity().cmp(&a.specificity()));
-        return selectors;
+        selectors
     }
 
     /// Parse one simple selector, e.g.: `type#id.class1.class2.class3`
@@ -152,7 +152,7 @@ impl Parser {
                 _ => break
             }
         }
-        return selector;
+        selector
     }
 
     /// Parse a list of declarations enclosed in `{ ... }`.
@@ -167,7 +167,7 @@ impl Parser {
             }
             declarations.push(self.parse_declaration());
         }
-        return declarations;
+        declarations
     }
 
     /// Parse one `<property>: <value>;` declaration.
@@ -227,7 +227,7 @@ impl Parser {
     /// Parse two hexadecimal digits.
     fn parse_hex_pair(&mut self) -> u8 {
         let s = &self.input[self.pos .. self.pos + 2];
-        self.pos = self.pos + 2;
+        self.pos += 2;
         u8::from_str_radix(s, 16).unwrap()
     }
 
@@ -248,7 +248,7 @@ impl Parser {
         while !self.eof() && test(self.next_char()) {
             result.push(self.consume_char());
         }
-        return result;
+        result
     }
 
     /// Return the current character, and advance self.pos to the next character.
@@ -257,7 +257,7 @@ impl Parser {
         let (_, cur_char) = iter.next().unwrap();
         let (next_pos, _) = iter.next().unwrap_or((1, ' '));
         self.pos += next_pos;
-        return cur_char;
+        cur_char
     }
 
     /// Read the current character without consuming it.
