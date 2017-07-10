@@ -9,4 +9,4 @@ path = "src/main.rs"
 
 [dependencies]
 getopts = "0.2.3"
-image = "0.12"
+image = "0.14"
