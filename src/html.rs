@@ -55,19 +55,19 @@ impl Parser {
     /// Parse a single element, including its open tag, contents, and closing tag.
     fn parse_element(&mut self) -> dom::Node {
         // Opening tag.
-        assert!(self.consume_char() == '<');
+        assert_eq!(self.consume_char(), '<');
         let tag_name = self.parse_tag_name();
         let attrs = self.parse_attributes();
-        assert!(self.consume_char() == '>');
+        assert_eq!(self.consume_char(), '>');
 
         // Contents.
         let children = self.parse_nodes();
 
         // Closing tag.
-        assert!(self.consume_char() == '<');
-        assert!(self.consume_char() == '/');
-        assert!(self.parse_tag_name() == tag_name);
-        assert!(self.consume_char() == '>');
+        assert_eq!(self.consume_char(), '<');
+        assert_eq!(self.consume_char(), '/');
+        assert_eq!(self.parse_tag_name(), tag_name);
+        assert_eq!(self.consume_char(), '>');
 
         dom::elem(tag_name, attrs, children)
     }
@@ -97,7 +97,7 @@ impl Parser {
     /// Parse a single name="value" pair.
     fn parse_attr(&mut self) -> (String, String) {
         let name = self.parse_tag_name();
-        assert!(self.consume_char() == '=');
+        assert_eq!(self.consume_char(), '=');
         let value = self.parse_attr_value();
         (name, value)
     }
@@ -107,7 +107,7 @@ impl Parser {
         let open_quote = self.consume_char();
         assert!(open_quote == '"' || open_quote == '\'');
         let value = self.consume_while(|c| c != open_quote);
-        assert!(self.consume_char() == open_quote);
+        assert_eq!(self.consume_char(), open_quote);
         value
     }
 

@@ -84,7 +84,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
             Ok((contents_object_id, end - start))
         }));
         try!(self.write_new_object(|length_object_id, pdf| {
-            assert!(length_object_id == contents_object_id + 1);
+            assert_eq!(length_object_id, contents_object_id + 1);
             write!(pdf.output, "{}\n", content_length)
         }));
         let page_object_id = try!(self.write_new_object(|page_object_id, pdf| {
@@ -111,7 +111,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
 
     fn write_object_with_id<F, T>(&mut self, id: usize, write_content: F) -> io::Result<T>
     where F: FnOnce(&mut Pdf<W>) -> io::Result<T> {
-        assert!(self.object_offsets[id] == -1);
+        assert_eq!(self.object_offsets[id], -1);
         // `as i64` here would only overflow for PDF files bigger than 2**63 bytes
         let offset = try!(self.tell()) as i64;
         self.object_offsets[id] = offset;

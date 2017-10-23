@@ -157,7 +157,7 @@ impl Parser {
 
     /// Parse a list of declarations enclosed in `{ ... }`.
     fn parse_declarations(&mut self) -> Vec<Declaration> {
-        assert!(self.consume_char() == '{');
+        assert_eq!(self.consume_char(), '{');
         let mut declarations = Vec::new();
         loop {
             self.consume_whitespace();
@@ -174,11 +174,11 @@ impl Parser {
     fn parse_declaration(&mut self) -> Declaration {
         let property_name = self.parse_identifier();
         self.consume_whitespace();
-        assert!(self.consume_char() == ':');
+        assert_eq!(self.consume_char(), ':');
         self.consume_whitespace();
         let value = self.parse_value();
         self.consume_whitespace();
-        assert!(self.consume_char() == ';');
+        assert_eq!(self.consume_char(), ';');
 
         Declaration {
             name: property_name,
@@ -216,7 +216,7 @@ impl Parser {
     }
 
     fn parse_color(&mut self) -> Value {
-        assert!(self.consume_char() == '#');
+        assert_eq!(self.consume_char(), '#');
         Value::ColorValue(Color {
             r: self.parse_hex_pair(),
             g: self.parse_hex_pair(),
