@@ -125,5 +125,5 @@ fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> boo
     }
 
     // We didn't find any non-matching selector components.
-    return true;
+    true
 }
