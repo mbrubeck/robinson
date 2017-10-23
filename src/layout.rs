@@ -101,8 +101,7 @@ impl<'a> LayoutBox<'a> {
     fn layout(&mut self, containing_block: Dimensions) {
         match self.box_type {
             BlockNode(_) => self.layout_block(containing_block),
-            InlineNode(_) => {} // TODO
-            AnonymousBlock => {} // TODO
+            InlineNode(_) | AnonymousBlock => {} // TODO
         }
     }
 
