@@ -3,10 +3,6 @@ name = "robinson"
 version = "0.0.1"
 authors = ["Matt Brubeck <mbrubeck@limpet.net>"]
 
-[[bin]]
-name = "robinson"
-path = "src/main.rs"
-
 [dependencies]
 getopts = "0.2.3"
 image = "0.18"
