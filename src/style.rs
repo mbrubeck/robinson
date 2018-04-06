@@ -31,7 +31,7 @@ impl<'a> StyledNode<'a> {
     }
 
     /// Return the specified value of property `name`, or property `fallback_name` if that doesn't
-    /// exist. or value `default` if neither does.
+    /// exist, or value `default` if neither does.
     pub fn lookup(&self, name: &str, fallback_name: &str, default: &Value) -> Value {
         self.value(name).unwrap_or_else(|| self.value(fallback_name)
                         .unwrap_or_else(|| default.clone()))
