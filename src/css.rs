@@ -3,8 +3,6 @@
 //! To support more CSS syntax, it would probably be easiest to replace this
 //! hand-rolled parser with one based on a library or parser generator.
 
-use std::ascii::AsciiExt; // for `to_ascii_lowercase`
-
 // Data structures:
 
 #[derive(Debug)]
