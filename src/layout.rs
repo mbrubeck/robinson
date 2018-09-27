@@ -49,7 +49,7 @@ pub enum BoxType<'a> {
 }
 
 impl<'a> LayoutBox<'a> {
-    fn new(box_type: BoxType) -> LayoutBox {
+    fn new(box_type: BoxType<'_>) -> LayoutBox<'_> {
         LayoutBox {
             box_type: box_type,
             dimensions: Default::default(),

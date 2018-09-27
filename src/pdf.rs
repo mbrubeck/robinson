@@ -10,7 +10,7 @@ fn px_to_pt(value: f32) -> f32 {
 }
 
 
-pub fn render<W: Write + Seek>(layout_root: &LayoutBox, bounds: Rect, file: &mut W)
+pub fn render<W: Write + Seek>(layout_root: &LayoutBox<'_>, bounds: Rect, file: &mut W)
     -> io::Result<()>
 {
     let display_list = build_display_list(layout_root);
@@ -101,7 +101,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
     }
 
     fn write_new_object<F, T>(&mut self, write_content: F) -> io::Result<T>
-    where F: FnOnce(usize, &mut Pdf<W>) -> io::Result<T> {
+    where F: FnOnce(usize, &mut Pdf<'_, W>) -> io::Result<T> {
         let id = self.object_offsets.len();
         // `as i64` here would only overflow for PDF files bigger than 2**63 bytes
         let offset = r#try!(self.tell()) as i64;
@@ -110,7 +110,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
     }
 
     fn write_object_with_id<F, T>(&mut self, id: usize, write_content: F) -> io::Result<T>
-    where F: FnOnce(&mut Pdf<W>) -> io::Result<T> {
+    where F: FnOnce(&mut Pdf<'_, W>) -> io::Result<T> {
         assert!(self.object_offsets[id] == -1);
         // `as i64` here would only overflow for PDF files bigger than 2**63 bytes
         let offset = r#try!(self.tell()) as i64;
@@ -119,7 +119,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
     }
 
     fn _write_object<F, T>(&mut self, id: usize, write_content: F) -> io::Result<T>
-    where F: FnOnce(&mut Pdf<W>) -> io::Result<T> {
+    where F: FnOnce(&mut Pdf<'_, W>) -> io::Result<T> {
         r#try!(write!(self.output, "{} 0 obj\n", id));
         let result = r#try!(write_content(self));
         r#try!(write!(self.output, "endobj\n"));

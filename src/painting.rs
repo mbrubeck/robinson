@@ -8,7 +8,7 @@ pub struct Canvas {
 }
 
 /// Paint a tree of LayoutBoxes to an array of pixels.
-pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
+pub fn paint(layout_root: &LayoutBox<'_>, bounds: Rect) -> Canvas {
     let display_list = build_display_list(layout_root);
     let mut canvas = Canvas::new(bounds.width as usize, bounds.height as usize);
     for item in display_list {
@@ -24,13 +24,13 @@ pub enum DisplayCommand {
 
 pub type DisplayList = Vec<DisplayCommand>;
 
-pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
+pub fn build_display_list(layout_root: &LayoutBox<'_>) -> DisplayList {
     let mut list = Vec::new();
     render_layout_box(&mut list, layout_root);
     list
 }
 
-fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
+fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox<'_>) {
     render_background(list, layout_box);
     render_borders(list, layout_box);
     for child in &layout_box.children {
@@ -38,12 +38,12 @@ fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
     }
 }
 
-fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
+fn render_background(list: &mut DisplayList, layout_box: &LayoutBox<'_>) {
     get_color(layout_box, "background").map(|color|
         list.push(DisplayCommand::SolidColor(color, layout_box.dimensions.border_box())));
 }
 
-fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
+fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox<'_>) {
     let color = match get_color(layout_box, "border-color") {
         Some(color) => color,
         _ => return
@@ -86,7 +86,7 @@ fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
 }
 
 /// Return the specified color for CSS property `name`, or None if no color was specified.
-fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
+fn get_color(layout_box: &LayoutBox<'_>, name: &str) -> Option<Color> {
     match layout_box.box_type {
         BlockNode(style) | InlineNode(style) => match style.value(name) {
             Some(Value::ColorValue(color)) => Some(color),
