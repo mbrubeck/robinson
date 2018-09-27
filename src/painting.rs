@@ -1,5 +1,5 @@
-use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
-use css::{Value, Color};
+use crate::layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
+use crate::css::{Value, Color};
 
 pub struct Canvas {
     pub pixels: Vec<Color>,
