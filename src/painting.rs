@@ -111,10 +111,10 @@ impl Canvas {
         match *item {
             DisplayCommand::SolidColor(color, rect) => {
                 // Clip the rectangle to the canvas boundaries.
-                let x0 = rect.x.clamp(0.0, self.width as f32) as usize;
-                let y0 = rect.y.clamp(0.0, self.height as f32) as usize;
-                let x1 = (rect.x + rect.width).clamp(0.0, self.width as f32) as usize;
-                let y1 = (rect.y + rect.height).clamp(0.0, self.height as f32) as usize;
+                let x0 = clamp(rect.x, 0, self.width);
+                let y0 = clamp(rect.y, 0, self.height);
+                let x1 = clamp(rect.x + rect.width, 0, self.width);
+                let y1 = clamp(rect.y + rect.height, 0, self.height);
 
                 for y in y0 .. y1 {
                     for x in x0 .. x1 {
@@ -127,11 +127,6 @@ impl Canvas {
     }
 }
 
-trait Clamp {
-    fn clamp(self, lower: Self, upper: Self) -> Self;
-}
-impl Clamp for f32 {
-    fn clamp(self, lower: f32, upper: f32) -> f32 {
-        self.max(lower).min(upper)
-    }
+fn clamp(val: f32, lower: usize, upper: usize) -> usize {
+    val.max(lower as f32).min(upper as f32) as usize
 }

@@ -8,5 +8,5 @@ name = "robinson"
 path = "src/main.rs"
 
 [dependencies]
-getopts = "0.2.3"
+getopts = "0.2"
 image = "0.14"
