@@ -2,6 +2,7 @@
 name = "robinson"
 version = "0.0.1"
 authors = ["Matt Brubeck <mbrubeck@limpet.net>"]
+edition = "2018"
 
 [[bin]]
 name = "robinson"

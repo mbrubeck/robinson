@@ -3,8 +3,8 @@
 //! This is not very interesting at the moment.  It will get much more
 //! complicated if I add support for compound selectors.
 
-use dom::{Node, NodeType, ElementData};
-use css::{Stylesheet, Rule, Selector, SimpleSelector, Value, Specificity};
+use crate::dom::{Node, NodeType, ElementData};
+use crate::css::{Stylesheet, Rule, Selector, SimpleSelector, Value, Specificity};
 use std::collections::HashMap;
 
 /// Map from CSS property names to values.

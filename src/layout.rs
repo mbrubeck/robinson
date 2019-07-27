@@ -1,8 +1,8 @@
 ///! Basic CSS block layout.
 
-use style::{StyledNode, Display};
-use css::Value::{Keyword, Length};
-use css::Unit::Px;
+use crate::style::{StyledNode, Display};
+use crate::css::Value::{Keyword, Length};
+use crate::css::Unit::Px;
 use std::default::Default;
 
 pub use self::BoxType::{AnonymousBlock, InlineNode, BlockNode};
@@ -49,7 +49,7 @@ pub enum BoxType<'a> {
 }
 
 impl<'a> LayoutBox<'a> {
-    fn new(box_type: BoxType) -> LayoutBox {
+    fn new(box_type: BoxType<'_>) -> LayoutBox<'_> {
         LayoutBox {
             box_type: box_type,
             dimensions: Default::default(),

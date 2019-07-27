@@ -1,6 +1,3 @@
-extern crate getopts;
-extern crate image;
-
 use std::default::Default;
 use std::io::{Read, BufWriter};
 use std::fs::File;
