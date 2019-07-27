@@ -15,7 +15,11 @@ use std::collections::HashMap;
 
 /// Parse an HTML document and return the root element.
 pub fn parse(source: String) -> dom::Node {
-    let mut nodes = Parser { pos: 0, input: source }.parse_nodes();
+    let mut nodes = Parser {
+        pos: 0,
+        input: source,
+    }
+    .parse_nodes();
 
     // If the document contains a root element, just return it. Otherwise, create one.
     if nodes.len() == 1 {
@@ -33,7 +37,7 @@ struct Parser {
 impl Parser {
     /// Parse a sequence of sibling nodes.
     fn parse_nodes(&mut self) -> Vec<dom::Node> {
-        let mut nodes = vec!();
+        let mut nodes = vec![];
         loop {
             self.consume_whitespace();
             if self.eof() || self.starts_with("</") {
@@ -48,7 +52,7 @@ impl Parser {
     fn parse_node(&mut self) -> dom::Node {
         match self.next_char() {
             '<' => self.parse_element(),
-            _   => self.parse_text()
+            _ => self.parse_text(),
         }
     }
 
@@ -76,7 +80,7 @@ impl Parser {
     fn parse_tag_name(&mut self) -> String {
         self.consume_while(|c| match c {
             'a'..='z' | 'A'..='Z' | '0'..='9' => true,
-            _ => false
+            _ => false,
         })
     }
 
@@ -123,7 +127,9 @@ impl Parser {
 
     /// Consume characters until `test` returns false.
     fn consume_while<F>(&mut self, test: F) -> String
-            where F: Fn(char) -> bool {
+    where
+        F: Fn(char) -> bool,
+    {
         let mut result = String::new();
         while !self.eof() && test(self.next_char()) {
             result.push(self.consume_char());
@@ -147,7 +153,7 @@ impl Parser {
 
     /// Does the current input start with the given string?
     fn starts_with(&self, s: &str) -> bool {
-        self.input[self.pos ..].starts_with(s)
+        self.input[self.pos..].starts_with(s)
     }
 
     /// Return true if all input is consumed.

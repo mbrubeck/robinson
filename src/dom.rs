@@ -1,6 +1,6 @@
 //! Basic DOM data structures.
 
-use std::collections::{HashMap,HashSet};
+use std::collections::{HashMap, HashSet};
 
 pub type AttrMap = HashMap<String, String>;
 
@@ -28,7 +28,10 @@ pub struct ElementData {
 // Constructor functions for convenience:
 
 pub fn text(data: String) -> Node {
-    Node { children: vec![], node_type: NodeType::Text(data) }
+    Node {
+        children: vec![],
+        node_type: NodeType::Text(data),
+    }
 }
 
 pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
@@ -37,7 +40,7 @@ pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
         node_type: NodeType::Element(ElementData {
             tag_name: name,
             attributes: attrs,
-        })
+        }),
     }
 }
 
@@ -51,7 +54,7 @@ impl ElementData {
     pub fn classes(&self) -> HashSet<&str> {
         match self.attributes.get("class") {
             Some(classlist) => classlist.split(' ').collect(),
-            None => HashSet::new()
+            None => HashSet::new(),
         }
     }
 }
