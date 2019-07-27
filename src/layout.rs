@@ -50,7 +50,7 @@ pub enum BoxType<'a> {
 impl<'a> LayoutBox<'a> {
     fn new(box_type: BoxType<'_>) -> LayoutBox<'_> {
         LayoutBox {
-            box_type: box_type,
+            box_type,
             dimensions: Default::default(),
             children: Vec::new(),
         }
@@ -137,7 +137,7 @@ impl<'a> LayoutBox<'a> {
 
         // `width` has initial value `auto`.
         let auto = Keyword("auto".to_string());
-        let mut width = style.value("width").unwrap_or(auto.clone());
+        let mut width = style.value("width").unwrap_or_else(|| auto.clone());
 
         // margin, border, and padding have initial value 0.
         let zero = Length(0.0, Px);
@@ -275,7 +275,7 @@ impl<'a> LayoutBox<'a> {
         for child in &mut self.children {
             child.layout(*d);
             // Increment the height so each child is laid out below the previous one.
-            d.content.height = d.content.height + child.dimensions.margin_box().height;
+            d.content.height += child.dimensions.margin_box().height;
         }
     }
 

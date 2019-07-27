@@ -20,7 +20,7 @@ fn main() {
 
     let matches = opts.parse(std::env::args().skip(1)).unwrap();
     let str_arg = |flag: &str, default: &str| -> String {
-        matches.opt_str(flag).unwrap_or(default.to_string())
+        matches.opt_str(flag).unwrap_or_else(|| default.to_string())
     };
 
     // Choose a format:

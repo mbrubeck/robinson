@@ -39,12 +39,12 @@ fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox<'_>) {
 }
 
 fn render_background(list: &mut DisplayList, layout_box: &LayoutBox<'_>) {
-    get_color(layout_box, "background").map(|color| {
+    if let Some(color) = get_color(layout_box, "background") {
         list.push(DisplayCommand::SolidColor(
             color,
             layout_box.dimensions.border_box(),
-        ))
-    });
+        ));
+    };
 }
 
 fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox<'_>) {
@@ -123,8 +123,8 @@ impl Canvas {
         };
         Canvas {
             pixels: vec![white; width * height],
-            width: width,
-            height: height,
+            width,
+            height,
         }
     }
 

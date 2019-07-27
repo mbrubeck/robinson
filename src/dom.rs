@@ -36,7 +36,7 @@ pub fn text(data: String) -> Node {
 
 pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
     Node {
-        children: children,
+        children,
         node_type: NodeType::Element(ElementData {
             tag_name: name,
             attributes: attrs,

@@ -1,3 +1,5 @@
+#![allow(clippy::write_with_newline)]
+
 use crate::layout::{LayoutBox, Rect};
 use crate::painting::{build_display_list, DisplayCommand};
 use std::io::{self, Seek, SeekFrom, Write};
@@ -58,7 +60,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
         // FIXME: Find out the lowest version that contains the features we’re using.
         output.write_all(b"%PDF-1.7\n%\xB5\xED\xAE\xFB\n")?;
         Ok(Pdf {
-            output: output,
+            output,
             // Object ID 0 is special in PDF.
             // We reserve IDs 1 and 2 for the catalog and page tree.
             object_offsets: vec![-1, -1, -1],
