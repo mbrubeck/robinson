@@ -1,7 +1,5 @@
 #![windows_subsystem = "windows"]   // This make rust to not open a console for the app
 #[cfg(windows)] extern crate winapi;
-// Import the css color struct
-use painting::Bitmap;
 
 // to convert our Rust UTF-8 strings to Windows UTF-16 strings
 use std::ffi::OsStr;
@@ -30,7 +28,7 @@ use self::winapi::um::winuser::{
     CS_OWNDC, CS_HREDRAW, CS_VREDRAW,
     CW_USEDEFAULT,
     WS_OVERLAPPEDWINDOW, WS_VISIBLE,
-    WM_PAINT, WM_SIZE,
+    WM_PAINT,
     DefWindowProcW, RegisterClassW, CreateWindowExW,
     TranslateMessage, DispatchMessageW, GetMessageW,
     BeginPaint, FillRect, EndPaint,
@@ -43,10 +41,6 @@ unsafe extern "system" fn custom_win_proc(
     l_param: LPARAM
 ) -> LRESULT {
     match msg {
-        WM_SIZE => {
-
-            1 as isize
-        }
         WM_PAINT => {
             let mut paint_struct = std::mem::MaybeUninit::<PAINTSTRUCT>::zeroed().assume_init();
             let paint_struct_ptr = &mut paint_struct as *mut PAINTSTRUCT;
@@ -54,12 +48,12 @@ unsafe extern "system" fn custom_win_proc(
             let hdc = BeginPaint(h_wnd, paint_struct_ptr);
 
             //let brush = CreatePatternBrush(buffer as HBITMAP);
-            let brush = CreateSolidBrush(0xFF0099 as COLORREF);
+            let brush = CreateSolidBrush(0 as COLORREF);
             FillRect(hdc, &paint_struct.rcPaint as *const RECT, brush);
 
             EndPaint(h_wnd, paint_struct_ptr);
             
-            1 as isize
+            0 as isize
         }
         _ => DefWindowProcW(h_wnd, msg, w_param, l_param)
     }
@@ -71,8 +65,6 @@ fn win32_string( value : &str ) -> Vec<u16> {
 
 pub struct Window {
     handle : HWND,
-    width: i32,
-    height: i32,
 }
 
 pub fn create_window( name : &str, title : &str, width: &i32, height: &i32) -> Result<Window, Error> {
@@ -120,27 +112,21 @@ pub fn create_window( name : &str, title : &str, width: &i32, height: &i32) -> R
         if handle.is_null() {
             Err( Error::last_os_error() )
         } else {
-            Ok( Window { handle: handle, width: *width, height: *height} )
+            Ok( Window { handle } )
         }
     }
 }
 
-impl Window {
-    pub fn set_bitmap(&mut self, bitmap: & Bitmap) {
-        //self.bitmap = bitmap;
-    }
+pub fn handle_message( window : &mut Window ) -> bool {
+    unsafe {
+        let mut message : MSG = std::mem::MaybeUninit::<MSG>::uninit().assume_init();
+        if GetMessageW( &mut message as *mut MSG, window.handle, 0, 0 ) > 0 {
+            TranslateMessage( &message as *const MSG );
+            DispatchMessageW( &message as *const MSG );
 
-    pub fn handle_message(&self) -> bool {
-        unsafe {
-            let mut message : MSG = std::mem::MaybeUninit::<MSG>::uninit().assume_init();
-            if GetMessageW( &mut message as *mut MSG, self.handle, 0, 0 ) > 0 {
-                TranslateMessage( &message as *const MSG );
-                DispatchMessageW( &message as *const MSG );
-
-                true
-            } else {
-                false
-            }
+            true
+        } else {
+            false
         }
     }
 }

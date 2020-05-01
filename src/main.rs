@@ -52,26 +52,12 @@ fn main() {
     let filename = str_arg("o", if png { "output.png" } else { "output.pdf" });
     let mut file = BufWriter::new(File::create(&filename).unwrap());
 
-    // render to bitmap
-    let canvas = painting::paint(&layout_root, viewport.content);
-
-    let mut window = create_window("main window", "HTML viewer",
-                            &(viewport.content.width as i32), &(viewport.content.height as i32)).unwrap();
-
-    // send the bitmap to the window
-    window.set_bitmap(&canvas.bitmap);
-
-    loop {
-        if !window.handle_message() {
-            break;
-        }
-    }
-
-    // Write to the file at exit:
+    // Write to the file:
     let ok = if png {
+        let canvas = painting::paint(&layout_root, viewport.content);
         let (w, h) = (canvas.width as u32, canvas.height as u32);
         let img = image::ImageBuffer::from_fn(w, h, move |x, y| {
-            let color = canvas.bitmap.pixels[(y * w + x) as usize];
+            let color = canvas.pixels[(y * w + x) as usize];
             image::Pixel::from_channels(color.r, color.g, color.b, color.a)
         });
         image::ImageRgba8(img).save(&mut file, image::PNG).is_ok()
@@ -82,6 +68,14 @@ fn main() {
         println!("Saved output as {}", filename)
     } else {
         println!("Error saving output as {}", filename)
+    }
+
+    let mut window = create_window("main window", "HTML viewer",
+                            &(viewport.content.width as i32), &(viewport.content.height as i32)).unwrap();
+    loop {
+        if !handle_message(&mut window) {
+            break;
+        }
     }
 }
 
