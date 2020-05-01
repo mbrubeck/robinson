@@ -7,16 +7,6 @@ pub struct Canvas {
     pub height: usize,
 }
 
-/// Paint a tree of LayoutBoxes to an array of pixels.
-pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
-    let display_list = build_display_list(layout_root);
-    let mut canvas = Canvas::new(bounds.width as usize, bounds.height as usize, None);
-    for item in display_list {
-        canvas.paint_item(&item);
-    }
-    canvas
-}
-
 #[derive(Debug)]
 pub enum DisplayCommand {
     SolidColor(Color, Rect),
@@ -96,6 +86,14 @@ fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
     }
 }
 
+/// Paint a tree of LayoutBoxes to an array of pixels.
+pub fn paint(layout_root: &LayoutBox, mut canvas: Canvas) -> Canvas {
+    let display_list = build_display_list(layout_root);
+    for item in display_list {
+        canvas.paint_item(&item);
+    }
+    canvas
+}
 
 impl Canvas {
     /// Create a blank canvas

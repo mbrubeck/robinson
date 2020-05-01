@@ -2,9 +2,8 @@
 #![feature(new_uninit)]
 
 use std::default::Default;
-use std::io::{Read, BufWriter};
+use std::io::{Read, BufWriter, BufRead};
 use std::fs::File;
-
 pub mod css;
 pub mod dom;
 pub mod html;
@@ -36,6 +35,7 @@ fn main() {
         "pdf" => false,
         x => panic!("Unknown output format: {}", x),
     };
+    let filename = str_arg("o", if png { "output.png" } else { "output.pdf" });
 
     //---------------------------------------------------------
     // Parse and Rendering
@@ -56,13 +56,27 @@ fn main() {
     let style_root = style::style_tree(&root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_root, viewport);
     // Rendering:
-    let canvas = painting::paint(&layout_root, viewport.content);
+    let mut canvas = painting::Canvas::new(viewport.content.width as usize, viewport.content.height as usize, None);
+    canvas = painting::paint(&layout_root, canvas);
     
     //----------------------------------------------------------
     // Showing to the screen
     //----------------------------------------------------------
-    let window = create_window("main window", "HTML viewer", &(viewport.content.width as i32), &(viewport.content.height as i32), &canvas).unwrap();
-    
+    let window_res = create_window("main window", "HTML viewer", &canvas);
+    let window = match window_res {
+        Ok(wnd) => wnd,
+        Err(e) => {
+            println!("Couldn't open a window: {}", e);
+            println!("Press 'Y' to render to a file (any key to exit): ");
+            let mut string = std::io::stdin().lock().lines().next().unwrap().unwrap();
+            string = string.to_lowercase();
+            if string.pop().unwrap() == 'y' {
+                save_to_file(&canvas, &filename.as_str(), png);
+            }
+            std::process::exit(-1)
+        }
+    };
+
     // main loop
     loop {
         if !window.handle_message() {
@@ -73,8 +87,7 @@ fn main() {
     //-----------------------
     // Save image to file
     //-----------------------
-    let filename = str_arg("o", if png { "output.png" } else { "output.pdf" });
-    save_to_file(filename.as_str(), &canvas, png);
+    save_to_file(&canvas, &filename.as_str(), png);
     
     println!("Window: {}x{}", window.width, window.height);
 }
@@ -85,7 +98,7 @@ fn read_source(filename: String) -> String {
     str
 }
 
-fn save_to_file(filename: &str, canvas: &painting::Canvas, is_png: bool) {
+fn save_to_file(canvas: &painting::Canvas, filename: &str, is_png: bool) {
     let mut file = BufWriter::new(File::create(&filename).unwrap());
     
     // Write to file:

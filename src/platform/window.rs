@@ -117,7 +117,7 @@ pub struct Window<'wl> {
     canvas: &'wl ::painting::Canvas
 }
 
-pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, canvas: &'a ::painting::Canvas) -> Result<&'a Window<'a>, Error> {
+pub fn create_window<'a>( name : &str, title : &str, canvas: &'a ::painting::Canvas) -> Result<&'a Window<'a>, Error> {
     // convert the strings to win32 strings
     let name = win32_string( name );
     let title = win32_string( title );
@@ -144,8 +144,14 @@ pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, 
         RegisterClassW( &wnd_class );
 
         let mut raw_window = std::boxed::Box::into_raw(
-            std::boxed::Box::new(Window { handle: 0 as HWND, width: *width, height: *height, canvas: canvas})
-        );
+            std::boxed::Box::new(
+                Window {
+                    handle: 0 as HWND,
+                    width: canvas.width as i32,
+                    height: canvas.height as i32,
+                    canvas: canvas
+                }
+        ));
 
         // Create the window
         let handle = CreateWindowExW(
@@ -156,8 +162,8 @@ pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, 
             //WS_VISIBLE,
             CW_USEDEFAULT,  // X default position
             CW_USEDEFAULT,  // Y default position
-            *width,
-            *height,
+            canvas.width as i32,
+            canvas.height as i32,
             null_mut(), // No parent
             null_mut(), // No menu
             hinstance,
