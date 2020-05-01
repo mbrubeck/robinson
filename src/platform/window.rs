@@ -94,14 +94,15 @@ fn win32_string( value : &str ) -> Vec<u16> {
     OsStr::new( value ).encode_wide().chain( once( 0 ) ).collect()
 }
 
-pub struct Window {
+// 'wl = window lifetime
+pub struct Window<'wl> {
     handle : HWND,
-    width: i32,
-    height: i32,
-    canvas: &::painting::Canvas
+    pub width: i32,
+    pub height: i32,
+    canvas: &'wl ::painting::Canvas
 }
 
-pub fn create_window( name : &str, title : &str, width: &i32, height: &i32, canvas: &::painting::Canvas) -> Result<Window, Error> {
+pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, canvas: &'a ::painting::Canvas) -> Result<Window<'a>, Error> {
     // convert the strings to win32 strings
     let name = win32_string( name );
     let title = win32_string( title );
@@ -151,7 +152,7 @@ pub fn create_window( name : &str, title : &str, width: &i32, height: &i32, canv
     }
 }
 
-impl Window {
+impl Window<'_> {
     pub fn handle_message(&self) -> bool {
         unsafe {
             let mut message : MSG = std::mem::MaybeUninit::<MSG>::uninit().assume_init();

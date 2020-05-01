@@ -72,9 +72,9 @@ fn main() {
     // Save image to file
     //-----------------------
     let filename = str_arg("o", if png { "output.png" } else { "output.pdf" });
-    save_to_file(filename, canvas, png);
+    save_to_file(filename.as_str(), &canvas, png);
     
-    println!("{}", window);
+    println!("Window: {}x{}", window.width, window.height);
 }
 
 fn read_source(filename: String) -> String {
@@ -95,7 +95,8 @@ fn save_to_file(filename: &str, canvas: &painting::Canvas, is_png: bool) {
         });
         image::ImageRgba8(img).save(&mut file, image::PNG).is_ok()
     } else {
-        println!("Error saving output as {}: format not supported!", filename)
+        println!("Error saving output as {}: format not supported!", filename);
+        false
     };
     if ok {
         println!("Saved output as {}", filename)
