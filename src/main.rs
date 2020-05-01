@@ -1,6 +1,4 @@
-extern crate getopts;
-extern crate image;
-
+#![feature(clamp)]
 use std::default::Default;
 use std::io::{Read, BufWriter};
 use std::fs::File;
@@ -12,6 +10,7 @@ pub mod layout;
 pub mod style;
 pub mod painting;
 pub mod pdf;
+pub mod platform;
 
 fn main() {
     // Parse command-line options:
@@ -68,6 +67,14 @@ fn main() {
         println!("Saved output as {}", filename)
     } else {
         println!("Error saving output as {}", filename)
+    }
+
+    let mut window = platform::window::create_window("main window", "HTML viewer").unwrap();
+    loop {
+        if !platform::window::handle_message(&mut window) {
+            break;
+        }
+
     }
 }
 
