@@ -54,21 +54,22 @@ fn main() {
     let stylesheet = css::parse(css);
     let style_root = style::style_tree(&root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_root, viewport);
-    // Rendering:
-    let canvas = painting::paint(&layout_root, &viewport.content);
-   
-    
     //----------------------------------------------------------
     // Showing to the screen
     //----------------------------------------------------------
-    let window_res = create_window("main window", "HTML viewer", canvas);
+    let window_res = create_window("main window", "HTML viewer", &viewport.content.width, &viewport.content.height, &layout_root);
     let window = match window_res {
         Ok(wnd) => wnd,
-        Err(e) => {
+        Err(tuple) => {
+            let e = tuple.0;
+            let layout_root = tuple.1;
             println!("Couldn't open a window: {}", e);
             println!("Press 'Y' to render to a file (any key to exit): ");
             let mut string = std::io::stdin().lock().lines().next().unwrap().unwrap();
             string = string.to_lowercase();
+            //-----------------------
+            // Save image to file
+            //-----------------------
             if string.pop().unwrap() == 'y' {
                 let canvas = painting::paint(&layout_root, &viewport.content);
                 save_to_file(&canvas, &filename.as_str(), png);
@@ -79,19 +80,10 @@ fn main() {
 
     // main loop
     loop {
-        let rect = &layout::Rect {x: 0, y: 0, width: window.width, height: -window.height};
-        let canvas = painting::paint(&layout_root, &rect);
-        window.swap_buffer(canvas);
         if !window.handle_message() {
             break;
         }
     }
-
-    //-----------------------
-    // Save image to file
-    //-----------------------}
-    let canvas = painting::paint(&layout_root, &viewport.content);
-    save_to_file(&canvas, &filename.as_str(), png);
     
     println!("Window: {}x{}", window.width as u32, window.height as u32);
 }

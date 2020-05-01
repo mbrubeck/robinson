@@ -43,12 +43,8 @@ use self::winapi::um::winuser::{
 };
 
 //--------------------------------------------------------------
-unsafe extern "system" fn custom_win_proc(
-    h_wnd: HWND, 
-    msg: UINT, 
-    w_param: WPARAM, 
-    l_param: LPARAM
-) -> LRESULT {
+unsafe extern "system"
+fn custom_win_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
     match msg {
         WM_CREATE => {
             let p_create = l_param as *mut CREATESTRUCTW;
@@ -61,18 +57,21 @@ unsafe extern "system" fn custom_win_proc(
             GetClientRect(h_wnd, &mut rect as LPRECT);
             (*window_data).width = rect.right - rect.left;
             (*window_data).height = rect.top - rect.bottom;
+            
             true as isize
         }
         WM_PAINT => {
             let mut paint_struct = std::mem::MaybeUninit::<PAINTSTRUCT>::zeroed().assume_init();
             let paint_struct_ptr = &mut paint_struct as *mut PAINTSTRUCT;
-
-            let window_data = GetWindowLongPtrW(h_wnd, GWLP_USERDATA) as *mut Window;
-
-            let hdc = BeginPaint(h_wnd, paint_struct_ptr);
-
             
-            let canvas = &(*window_data).canvas;
+            let window_data = GetWindowLongPtrW(h_wnd, GWLP_USERDATA) as *mut Window;
+            
+            let hdc = BeginPaint(h_wnd, paint_struct_ptr);
+            
+            
+            let rect = &::layout::Rect {x: 0, y: 0, width: (*window_data).width, height: -(*window_data).height};
+            let canvas = ::painting::paint((*window_data).layout_root, &rect);
+            
 
             let bit_info = BITMAPINFO {
                 bmiHeader: BITMAPINFOHEADER {
@@ -111,14 +110,15 @@ fn win32_string( value : &str ) -> Vec<u16> {
 }
 
 // 'wl = window lifetime
-pub struct Window {
+pub struct Window<'wl> {
     handle : HWND,
     pub width: i32,
     pub height: i32,
-    canvas: ::painting::Canvas
+    pub layout_root: &'wl ::layout::LayoutBox<'wl>
 }
 
-pub fn create_window<'a>( name : &str, title : &str, canvas: ::painting::Canvas) -> Result<&'a mut Window, Error> {
+pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, layout_root: &'a ::layout::LayoutBox<'a>)
+ -> Result<&'a mut Window<'a>, (Error, &'a ::layout::LayoutBox<'a>)> {
     // convert the strings to win32 strings
     let name = win32_string( name );
     let title = win32_string( title );
@@ -148,9 +148,9 @@ pub fn create_window<'a>( name : &str, title : &str, canvas: ::painting::Canvas)
             std::boxed::Box::new(
                 Window {
                     handle: 0 as HWND,
-                    width: canvas.width as i32,
-                    height: canvas.height as i32,
-                    canvas: canvas
+                    width: *width,
+                    height: *height,
+                    layout_root: layout_root
                 }
         ));
 
@@ -163,8 +163,8 @@ pub fn create_window<'a>( name : &str, title : &str, canvas: ::painting::Canvas)
             //WS_VISIBLE,
             CW_USEDEFAULT,  // X default position
             CW_USEDEFAULT,  // Y default position
-            (*raw_window).canvas.width as i32,
-            (*raw_window).canvas.height as i32,
+            *width,
+            *height,
             null_mut(), // No parent
             null_mut(), // No menu
             hinstance,
@@ -172,7 +172,7 @@ pub fn create_window<'a>( name : &str, title : &str, canvas: ::painting::Canvas)
         );
 
         if handle.is_null() {
-            Err( Error::last_os_error() )
+            Err( (Error::last_os_error(), layout_root) )
         } else {
             (*raw_window).handle = handle;
             Ok( &mut (*raw_window) )
@@ -180,7 +180,7 @@ pub fn create_window<'a>( name : &str, title : &str, canvas: ::painting::Canvas)
     }
 }
 
-impl Window {
+impl Window<'_> {
     pub fn handle_message(&self) -> bool {
         unsafe {
             let mut message : MSG = std::mem::MaybeUninit::<MSG>::uninit().assume_init();
@@ -193,9 +193,5 @@ impl Window {
                 false
             }
         }
-    }
-
-    pub fn swap_buffer(&mut self, canvas: ::painting::Canvas) {
-        self.canvas = canvas;
     }
 }
