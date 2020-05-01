@@ -10,27 +10,48 @@ use std::ptr::null_mut;
 use std::io::Error;
 
 // use is a "using namespace"
-use self::winapi::shared::windef::HWND;
+use self::winapi::shared::windef::{
+    HWND, HBRUSH, RECT
+};
+use self::winapi::shared::minwindef::{
+    LRESULT, UINT,
+    WPARAM, LPARAM,
+};
 use self::winapi::um::libloaderapi::GetModuleHandleW;
 
 use self::winapi::um::winuser::{
-    MSG,
-    WNDCLASSW,
-    CS_OWNDC,
-    CS_HREDRAW,
-    CS_VREDRAW,
+    MSG, PAINTSTRUCT, WNDCLASSW,
+    CS_OWNDC, CS_HREDRAW, CS_VREDRAW,
     CW_USEDEFAULT,
-    WS_OVERLAPPEDWINDOW,
-    WS_VISIBLE,
-    DefWindowProcW,
-    RegisterClassW,
-    CreateWindowExW,
-    TranslateMessage,
-    DispatchMessageW,
-    GetMessageW,
+    WS_OVERLAPPEDWINDOW, WS_VISIBLE,
+    WM_PAINT, COLOR_WINDOW,
+    DefWindowProcW, RegisterClassW, CreateWindowExW,
+    TranslateMessage, DispatchMessageW, GetMessageW,
+    BeginPaint, FillRect, EndPaint,
 };
 //--------------------------------------------------------------
+unsafe extern "system" fn custom_win_proc(
+    h_wnd: HWND, 
+    msg: UINT, 
+    w_param: WPARAM, 
+    l_param: LPARAM
+) -> LRESULT {
+    match msg {
+        WM_PAINT => {
+            let mut paint_struct = std::mem::MaybeUninit::<PAINTSTRUCT>::zeroed().assume_init();
+            let paint_struct_ptr = &mut paint_struct as *mut PAINTSTRUCT;
+            
+            let hdc = BeginPaint(h_wnd, paint_struct_ptr);
 
+            FillRect(hdc, &paint_struct.rcPaint as *const RECT, (COLOR_WINDOW+1) as HBRUSH);
+
+            EndPaint(h_wnd, paint_struct_ptr);
+            
+            0 as isize
+        }
+        _ => DefWindowProcW(h_wnd, msg, w_param, l_param)
+    }
+}
 
 fn win32_string( value : &str ) -> Vec<u16> {
     OsStr::new( value ).encode_wide().chain( once( 0 ) ).collect()
@@ -53,7 +74,7 @@ pub fn create_window( name : &str, title : &str ) -> Result<Window, Error> {
         // create the window class
         let wnd_class = WNDCLASSW {
             style : CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
-            lpfnWndProc : Some( DefWindowProcW ),
+            lpfnWndProc : Some( custom_win_proc ),
             hInstance : hinstance,
             lpszClassName : name.as_ptr(),
             cbClsExtra : 0,

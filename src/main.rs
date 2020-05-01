@@ -11,6 +11,7 @@ pub mod style;
 pub mod painting;
 pub mod pdf;
 pub mod platform;
+use platform::window::*;
 
 fn main() {
     // Parse command-line options:
@@ -69,12 +70,11 @@ fn main() {
         println!("Error saving output as {}", filename)
     }
 
-    let mut window = platform::window::create_window("main window", "HTML viewer").unwrap();
+    let mut window = create_window("main window", "HTML viewer").unwrap();
     loop {
-        if !platform::window::handle_message(&mut window) {
+        if !handle_message(&mut window) {
             break;
         }
-
     }
 }
 
