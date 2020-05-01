@@ -34,18 +34,28 @@ use self::winapi::um::winuser::{
     MSG, PAINTSTRUCT, WNDCLASSW, CREATESTRUCTW,
     CS_OWNDC, CS_HREDRAW, CS_VREDRAW,
     CW_USEDEFAULT, GWLP_USERDATA,
-    WS_OVERLAPPEDWINDOW, WS_VISIBLE,
-    WM_PAINT, WM_SIZE, WM_CREATE,
+    WM_PAINT, WM_SIZE, WM_CREATE, WM_CLOSE,
+    WM_DESTROY, WS_OVERLAPPEDWINDOW, WS_VISIBLE, PM_REMOVE,
     DefWindowProcW, RegisterClassW, CreateWindowExW,
-    TranslateMessage, DispatchMessageW, GetMessageW,
+    TranslateMessage, DispatchMessageW, PeekMessageW,
     SetWindowLongPtrW, GetWindowLongPtrW, GetClientRect,
     BeginPaint, EndPaint,
 };
 
 //--------------------------------------------------------------
+static mut CLOSE_WINDOW: bool = false;
+
 unsafe extern "system"
 fn custom_win_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> LRESULT {
     match msg {
+        WM_CLOSE => {
+            CLOSE_WINDOW = true;
+            true as isize
+        }
+        WM_DESTROY => {
+            CLOSE_WINDOW = true;
+            true as isize
+        }
         WM_CREATE => {
             let p_create = l_param as *mut CREATESTRUCTW;
             let window_data = (*p_create).lpCreateParams as *mut Window;
@@ -58,6 +68,9 @@ fn custom_win_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> 
             (*window_data).width = rect.right - rect.left;
             (*window_data).height = rect.top - rect.bottom;
             
+            // resize the canvas and rerender
+            let rect = &::layout::Rect {x: 0, y: 0, width: (*window_data).width, height: -(*window_data).height};
+            (*window_data).canvas = ::painting::paint((*window_data).layout_root, &rect);
             true as isize
         }
         WM_PAINT => {
@@ -67,11 +80,7 @@ fn custom_win_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> 
             let window_data = GetWindowLongPtrW(h_wnd, GWLP_USERDATA) as *mut Window;
             
             let hdc = BeginPaint(h_wnd, paint_struct_ptr);
-            
-            
-            let rect = &::layout::Rect {x: 0, y: 0, width: (*window_data).width, height: -(*window_data).height};
-            let canvas = ::painting::paint((*window_data).layout_root, &rect);
-            
+            let canvas = &(*window_data).canvas;
 
             let bit_info = BITMAPINFO {
                 bmiHeader: BITMAPINFOHEADER {
@@ -98,8 +107,7 @@ fn custom_win_proc(h_wnd: HWND, msg: UINT, w_param: WPARAM, l_param: LPARAM) -> 
                         canvas.pixels.as_ptr() as *const VOID, &bit_info as *const BITMAPINFO,
                         DIB_RGB_COLORS, SRCCOPY);
 
-            EndPaint(h_wnd, paint_struct_ptr);
-            false as isize
+            EndPaint(h_wnd, paint_struct_ptr) as isize
         }
         _ => DefWindowProcW(h_wnd, msg, w_param, l_param)
     }
@@ -114,7 +122,8 @@ pub struct Window<'wl> {
     handle : HWND,
     pub width: i32,
     pub height: i32,
-    pub layout_root: &'wl ::layout::LayoutBox<'wl>
+    pub layout_root: &'wl ::layout::LayoutBox<'wl>,
+    pub canvas: ::painting::Canvas
 }
 
 pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, layout_root: &'a ::layout::LayoutBox<'a>)
@@ -150,7 +159,8 @@ pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, 
                     handle: 0 as HWND,
                     width: *width,
                     height: *height,
-                    layout_root: layout_root
+                    layout_root: layout_root,
+                    canvas: ::painting::Canvas::new(*width as usize, *height as usize, None)
                 }
         ));
 
@@ -184,14 +194,16 @@ impl Window<'_> {
     pub fn handle_message(&self) -> bool {
         unsafe {
             let mut message : MSG = std::mem::MaybeUninit::<MSG>::uninit().assume_init();
-            if GetMessageW( &mut message as *mut MSG, self.handle, 0, 0 ) > 0 {
+            
+            while PeekMessageW( &mut message as *mut MSG, self.handle, 0, 0, PM_REMOVE) != 0 {
+                if CLOSE_WINDOW == true {
+                    break;
+                }
+
                 TranslateMessage( &message as *const MSG );
                 DispatchMessageW( &message as *const MSG );
-
-                true
-            } else {
-                false
             }
+            !CLOSE_WINDOW
         }
     }
 }
