@@ -59,23 +59,35 @@ fn main() {
     //----------------------------------------------------------
     // Showing to the screen
     //----------------------------------------------------------
-    let mut window = create_window("main window", "HTML viewer",
-    &(viewport.content.width as i32), &(viewport.content.height as i32)).unwrap();
+    let window = create_window("main window", "HTML viewer", &(viewport.content.width as i32), &(viewport.content.height as i32), &canvas).unwrap();
+    
+    // main loop
     loop {
         if !window.handle_message() {
             break;
         }
     }
-    
+
     //-----------------------
     // Save image to file
     //-----------------------
-    
-    // Create the output file:
     let filename = str_arg("o", if png { "output.png" } else { "output.pdf" });
+    save_to_file(filename, canvas, png);
+    
+    println!("{}", window);
+}
+
+fn read_source(filename: String) -> String {
+    let mut str = String::new();
+    File::open(filename).unwrap().read_to_string(&mut str).unwrap();
+    str
+}
+
+fn save_to_file(filename: &str, canvas: &painting::Canvas, is_png: bool) {
     let mut file = BufWriter::new(File::create(&filename).unwrap());
+    
     // Write to file:
-    let ok = if png {
+    let ok = if is_png {
         let (w, h) = (canvas.width as u32, canvas.height as u32);
         let img = image::ImageBuffer::from_fn(w, h, move |x, y| {
             let color = canvas.pixels[(y * w + x) as usize];
@@ -83,17 +95,11 @@ fn main() {
         });
         image::ImageRgba8(img).save(&mut file, image::PNG).is_ok()
     } else {
-        pdf::render(&layout_root, viewport.content, &mut file).is_ok()
+        println!("Error saving output as {}: format not supported!", filename)
     };
     if ok {
         println!("Saved output as {}", filename)
     } else {
         println!("Error saving output as {}", filename)
     }
-}
-
-fn read_source(filename: String) -> String {
-    let mut str = String::new();
-    File::open(filename).unwrap().read_to_string(&mut str).unwrap();
-    str
 }

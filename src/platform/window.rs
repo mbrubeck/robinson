@@ -1,6 +1,7 @@
 #![windows_subsystem = "windows"]   // This make rust to not open a console for the app
 #[cfg(windows)] extern crate winapi;
 
+
 // to convert our Rust UTF-8 strings to Windows UTF-16 strings
 use std::ffi::OsStr;
 use std::os::windows::ffi::OsStrExt;
@@ -11,19 +12,17 @@ use std::io::Error;
 
 // use is a "using namespace" equivalent
 
-use self::winapi::shared::windef::{
-    HWND, RECT, COLORREF
-};
 use self::winapi::shared::minwindef::{
     LRESULT, UINT,
     WPARAM, LPARAM,
 };
 
+use self::winapi::shared::windef::HWND;
 use self::winapi::um::libloaderapi::GetModuleHandleW;
 use self::winapi::um::winnt::VOID;
 
 use self::winapi::um::wingdi::{
-    CreateSolidBrush, StretchDIBits,
+    StretchDIBits,
     BITMAPINFO, BITMAPINFOHEADER, RGBQUAD,
     DIB_RGB_COLORS, SRCCOPY, BI_RGB
 };
@@ -36,7 +35,7 @@ use self::winapi::um::winuser::{
     WM_PAINT, WM_SIZE,
     DefWindowProcW, RegisterClassW, CreateWindowExW,
     TranslateMessage, DispatchMessageW, GetMessageW,
-    BeginPaint, FillRect, EndPaint,
+    BeginPaint, EndPaint,
 };
 
 //--------------------------------------------------------------
@@ -57,13 +56,9 @@ unsafe extern "system" fn custom_win_proc(
 
             let hdc = BeginPaint(h_wnd, paint_struct_ptr);
 
-            //let brush = CreatePatternBrush(buffer as HBITMAP);
-            //let brush = CreateSolidBrush(0xFF0099 as COLORREF);
-            //FillRect(hdc, &paint_struct.rcPaint as *const RECT, brush);
-
             let color = ::css::Color { r: 255, g: 0, b: 255, a: 255 };
             let canvas = ::painting::Canvas::new(800, 600, Some(color));
-            
+
             let bit_info = BITMAPINFO {
                 bmiHeader: BITMAPINFOHEADER {
                     biSize: std::mem::size_of::<BITMAPINFOHEADER>() as u32,
@@ -81,7 +76,6 @@ unsafe extern "system" fn custom_win_proc(
                 bmiColors: [RGBQUAD{rgbBlue: 1, rgbGreen: 1, rgbRed: 1, rgbReserved: 1}]
             };
 
-
             let window_width: i32 = 800;
             let window_height: i32 = 600;
             StretchDIBits(hdc,
@@ -90,9 +84,7 @@ unsafe extern "system" fn custom_win_proc(
                         canvas.pixels.as_ptr() as *const VOID, &bit_info as *const BITMAPINFO,
                         DIB_RGB_COLORS, SRCCOPY);
 
-            EndPaint(h_wnd, paint_struct_ptr);
-            
-            1 as isize
+            EndPaint(h_wnd, paint_struct_ptr) as isize
         }
         _ => DefWindowProcW(h_wnd, msg, w_param, l_param)
     }
@@ -106,9 +98,10 @@ pub struct Window {
     handle : HWND,
     width: i32,
     height: i32,
+    canvas: &::painting::Canvas
 }
 
-pub fn create_window( name : &str, title : &str, width: &i32, height: &i32) -> Result<Window, Error> {
+pub fn create_window( name : &str, title : &str, width: &i32, height: &i32, canvas: &::painting::Canvas) -> Result<Window, Error> {
     // convert the strings to win32 strings
     let name = win32_string( name );
     let title = win32_string( title );
@@ -153,7 +146,7 @@ pub fn create_window( name : &str, title : &str, width: &i32, height: &i32) -> R
         if handle.is_null() {
             Err( Error::last_os_error() )
         } else {
-            Ok( Window { handle: handle, width: *width, height: *height} )
+            Ok( Window { handle: handle, width: *width, height: *height, canvas: canvas} )
         }
     }
 }
