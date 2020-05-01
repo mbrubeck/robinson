@@ -1,8 +1,13 @@
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
 use css::{Value, Color};
 
+#[derive(Clone)]
+pub struct Bitmap {
+    pub pixels: Vec<Color>
+}
+
 pub struct Canvas {
-    pub pixels: Vec<Color>,
+    pub bitmap: Bitmap,
     pub width: usize,
     pub height: usize,
 }
@@ -102,7 +107,7 @@ impl Canvas {
     fn new(width: usize, height: usize) -> Canvas {
         let white = Color { r: 255, g: 255, b: 255, a: 255 };
         Canvas {
-            pixels: vec![white; width * height],
+            bitmap: Bitmap{pixels: vec![white; width * height]},
             width: width,
             height: height,
         }
@@ -120,7 +125,7 @@ impl Canvas {
                 for y in y0 .. y1 {
                     for x in x0 .. x1 {
                         // TODO: alpha compositing with existing pixel
-                        self.pixels[y * self.width + x] = color;
+                        self.bitmap.pixels[y * self.width + x] = color;
                     }
                 }
             }
