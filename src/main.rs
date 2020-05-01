@@ -14,7 +14,9 @@ pub mod platform;
 use platform::window::*;
 
 fn main() {
-    // Parse command-line options:
+    //-----------------------------------
+    // Parse command-line options
+    //-----------------------------------
     let mut opts = getopts::Options::new();
     opts.optopt("h", "html", "HTML document", "FILENAME");
     opts.optopt("c", "css", "CSS stylesheet", "FILENAME");
@@ -33,6 +35,10 @@ fn main() {
         x => panic!("Unknown output format: {}", x),
     };
 
+    //---------------------------------------------------------
+    // Parse and Rendering
+    //---------------------------------------------------------
+    
     // Read input files:
     let html = read_source(str_arg("h", "examples/test.html"));
     let css  = read_source(str_arg("c", "examples/test.css"));
@@ -42,19 +48,34 @@ fn main() {
     viewport.content.width  = 800.0;
     viewport.content.height = 600.0;
 
-    // Parsing and rendering:
+    // Parsing:
     let root_node = html::parse(html);
     let stylesheet = css::parse(css);
     let style_root = style::style_tree(&root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_root, viewport);
-
+    // Rendering:
+    let canvas = painting::paint(&layout_root, viewport.content);
+    
+    //----------------------------------------------------------
+    // Showing to the screen
+    //----------------------------------------------------------
+    let mut window = create_window("main window", "HTML viewer",
+    &(viewport.content.width as i32), &(viewport.content.height as i32)).unwrap();
+    loop {
+        if !window.handle_message() {
+            break;
+        }
+    }
+    
+    //-----------------------
+    // Save image to file
+    //-----------------------
+    
     // Create the output file:
     let filename = str_arg("o", if png { "output.png" } else { "output.pdf" });
     let mut file = BufWriter::new(File::create(&filename).unwrap());
-
-    // Write to the file:
+    // Write to file:
     let ok = if png {
-        let canvas = painting::paint(&layout_root, viewport.content);
         let (w, h) = (canvas.width as u32, canvas.height as u32);
         let img = image::ImageBuffer::from_fn(w, h, move |x, y| {
             let color = canvas.pixels[(y * w + x) as usize];
@@ -68,14 +89,6 @@ fn main() {
         println!("Saved output as {}", filename)
     } else {
         println!("Error saving output as {}", filename)
-    }
-
-    let mut window = create_window("main window", "HTML viewer",
-                            &(viewport.content.width as i32), &(viewport.content.height as i32)).unwrap();
-    loop {
-        if !handle_message(&mut window) {
-            break;
-        }
     }
 }
 

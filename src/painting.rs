@@ -10,7 +10,7 @@ pub struct Canvas {
 /// Paint a tree of LayoutBoxes to an array of pixels.
 pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
     let display_list = build_display_list(layout_root);
-    let mut canvas = Canvas::new(bounds.width as usize, bounds.height as usize);
+    let mut canvas = Canvas::new(bounds.width as usize, bounds.height as usize, None);
     for item in display_list {
         canvas.paint_item(&item);
     }
@@ -99,10 +99,14 @@ fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
 
 impl Canvas {
     /// Create a blank canvas
-    fn new(width: usize, height: usize) -> Canvas {
-        let white = Color { r: 255, g: 255, b: 255, a: 255 };
+    pub fn new(width: usize, height: usize, color: Option<Color>) -> Canvas {
+        let fill_color: Color = match color {
+            Some(value) => value,
+            None => { Color { r: 255, g: 255, b: 255, a: 255 } }
+        };
+        
         Canvas {
-            pixels: vec![white; width * height],
+            pixels: vec![fill_color; width * height],
             width: width,
             height: height,
         }
