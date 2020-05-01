@@ -67,10 +67,12 @@ unsafe extern "system" fn custom_win_proc(
             let mut paint_struct = std::mem::MaybeUninit::<PAINTSTRUCT>::zeroed().assume_init();
             let paint_struct_ptr = &mut paint_struct as *mut PAINTSTRUCT;
 
+            let window_data = GetWindowLongPtrW(h_wnd, GWLP_USERDATA) as *mut Window;
+
             let hdc = BeginPaint(h_wnd, paint_struct_ptr);
 
-            let color = ::css::Color { r: 255, g: 0, b: 255, a: 255 };
-            let canvas = ::painting::Canvas::new(800, 600, Some(color));
+            
+            let canvas = (*window_data).canvas;
 
             let bit_info = BITMAPINFO {
                 bmiHeader: BITMAPINFOHEADER {
