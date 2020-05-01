@@ -17,7 +17,10 @@ use self::winapi::shared::minwindef::{
     WPARAM, LPARAM,
 };
 
-use self::winapi::shared::windef::HWND;
+use self::winapi::shared::windef::{
+    HWND, LPRECT, RECT
+};
+use self::winapi::shared::basetsd::LONG_PTR;
 use self::winapi::um::libloaderapi::GetModuleHandleW;
 use self::winapi::um::winnt::VOID;
 
@@ -28,13 +31,14 @@ use self::winapi::um::wingdi::{
 };
 
 use self::winapi::um::winuser::{
-    MSG, PAINTSTRUCT, WNDCLASSW,
+    MSG, PAINTSTRUCT, WNDCLASSW, CREATESTRUCTW,
     CS_OWNDC, CS_HREDRAW, CS_VREDRAW,
-    CW_USEDEFAULT,
+    CW_USEDEFAULT, GWLP_USERDATA,
     WS_OVERLAPPEDWINDOW, WS_VISIBLE,
-    WM_PAINT, WM_SIZE,
+    WM_PAINT, WM_SIZE, WM_CREATE,
     DefWindowProcW, RegisterClassW, CreateWindowExW,
     TranslateMessage, DispatchMessageW, GetMessageW,
+    SetWindowLongPtrW, GetWindowLongPtrW, GetClientRect,
     BeginPaint, EndPaint,
 };
 
@@ -46,9 +50,18 @@ unsafe extern "system" fn custom_win_proc(
     l_param: LPARAM
 ) -> LRESULT {
     match msg {
+        WM_CREATE => {
+            let p_create = l_param as *mut CREATESTRUCTW;
+            let window_data = (*p_create).lpCreateParams as *mut Window;
+            SetWindowLongPtrW(h_wnd, GWLP_USERDATA, window_data as LONG_PTR)
+        }
         WM_SIZE => {
-
-            1 as isize
+            let window_data = GetWindowLongPtrW(h_wnd, GWLP_USERDATA) as *mut Window;
+            let mut rect = std::mem::MaybeUninit::<RECT>::uninit().assume_init();
+            GetClientRect(h_wnd, &mut rect as LPRECT);
+            (*window_data).width = rect.right - rect.left;
+            (*window_data).height = rect.top - rect.bottom;
+            true as isize
         }
         WM_PAINT => {
             let mut paint_struct = std::mem::MaybeUninit::<PAINTSTRUCT>::zeroed().assume_init();
@@ -102,7 +115,7 @@ pub struct Window<'wl> {
     canvas: &'wl ::painting::Canvas
 }
 
-pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, canvas: &'a ::painting::Canvas) -> Result<Window<'a>, Error> {
+pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, canvas: &'a ::painting::Canvas) -> Result<&'a Window<'a>, Error> {
     // convert the strings to win32 strings
     let name = win32_string( name );
     let title = win32_string( title );
@@ -128,6 +141,10 @@ pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, 
 
         RegisterClassW( &wnd_class );
 
+        let mut raw_window = std::boxed::Box::into_raw(
+            std::boxed::Box::new(Window { handle: 0 as HWND, width: *width, height: *height, canvas: canvas})
+        );
+
         // Create the window
         let handle = CreateWindowExW(
             0,
@@ -135,19 +152,21 @@ pub fn create_window<'a>( name : &str, title : &str, width: &i32, height: &i32, 
             title.as_ptr(),
             WS_OVERLAPPEDWINDOW | WS_VISIBLE,
             //WS_VISIBLE,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
+            CW_USEDEFAULT,  // X default position
+            CW_USEDEFAULT,  // Y default position
             *width,
             *height,
-            null_mut(),
-            null_mut(),
+            null_mut(), // No parent
+            null_mut(), // No menu
             hinstance,
-            null_mut() );
+            raw_window as *mut VOID // App data
+        );
 
         if handle.is_null() {
             Err( Error::last_os_error() )
         } else {
-            Ok( Window { handle: handle, width: *width, height: *height, canvas: canvas} )
+            (*raw_window).handle = handle;
+            Ok( &(*raw_window) )
         }
     }
 }

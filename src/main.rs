@@ -1,4 +1,6 @@
 #![feature(clamp)]
+#![feature(new_uninit)]
+
 use std::default::Default;
 use std::io::{Read, BufWriter};
 use std::fs::File;
