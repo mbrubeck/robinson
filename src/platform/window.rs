@@ -72,7 +72,7 @@ unsafe extern "system" fn custom_win_proc(
             let hdc = BeginPaint(h_wnd, paint_struct_ptr);
 
             
-            let canvas = (*window_data).canvas;
+            let canvas = &(*window_data).canvas;
 
             let bit_info = BITMAPINFO {
                 bmiHeader: BITMAPINFOHEADER {
@@ -99,7 +99,8 @@ unsafe extern "system" fn custom_win_proc(
                         canvas.pixels.as_ptr() as *const VOID, &bit_info as *const BITMAPINFO,
                         DIB_RGB_COLORS, SRCCOPY);
 
-            EndPaint(h_wnd, paint_struct_ptr) as isize
+            EndPaint(h_wnd, paint_struct_ptr);
+            false as isize
         }
         _ => DefWindowProcW(h_wnd, msg, w_param, l_param)
     }
@@ -110,14 +111,14 @@ fn win32_string( value : &str ) -> Vec<u16> {
 }
 
 // 'wl = window lifetime
-pub struct Window<'wl> {
+pub struct Window {
     handle : HWND,
     pub width: i32,
     pub height: i32,
-    canvas: &'wl ::painting::Canvas
+    canvas: ::painting::Canvas
 }
 
-pub fn create_window<'a>( name : &str, title : &str, canvas: &'a ::painting::Canvas) -> Result<&'a Window<'a>, Error> {
+pub fn create_window<'a>( name : &str, title : &str, canvas: ::painting::Canvas) -> Result<&'a mut Window, Error> {
     // convert the strings to win32 strings
     let name = win32_string( name );
     let title = win32_string( title );
@@ -162,8 +163,8 @@ pub fn create_window<'a>( name : &str, title : &str, canvas: &'a ::painting::Can
             //WS_VISIBLE,
             CW_USEDEFAULT,  // X default position
             CW_USEDEFAULT,  // Y default position
-            canvas.width as i32,
-            canvas.height as i32,
+            (*raw_window).canvas.width as i32,
+            (*raw_window).canvas.height as i32,
             null_mut(), // No parent
             null_mut(), // No menu
             hinstance,
@@ -174,12 +175,12 @@ pub fn create_window<'a>( name : &str, title : &str, canvas: &'a ::painting::Can
             Err( Error::last_os_error() )
         } else {
             (*raw_window).handle = handle;
-            Ok( &(*raw_window) )
+            Ok( &mut (*raw_window) )
         }
     }
 }
 
-impl Window<'_> {
+impl Window {
     pub fn handle_message(&self) -> bool {
         unsafe {
             let mut message : MSG = std::mem::MaybeUninit::<MSG>::uninit().assume_init();
@@ -192,5 +193,9 @@ impl Window<'_> {
                 false
             }
         }
+    }
+
+    pub fn swap_buffer(&mut self, canvas: ::painting::Canvas) {
+        self.canvas = canvas;
     }
 }

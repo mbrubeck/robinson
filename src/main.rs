@@ -10,7 +10,6 @@ pub mod html;
 pub mod layout;
 pub mod style;
 pub mod painting;
-pub mod pdf;
 pub mod platform;
 use platform::window::*;
 
@@ -47,8 +46,8 @@ fn main() {
 
     // Since we don't have an actual window, hard-code the "viewport" size.
     let mut viewport: layout::Dimensions = Default::default();
-    viewport.content.width  = 800.0;
-    viewport.content.height = 600.0;
+    viewport.content.width  = 1280;
+    viewport.content.height = 720;
 
     // Parsing:
     let root_node = html::parse(html);
@@ -56,13 +55,13 @@ fn main() {
     let style_root = style::style_tree(&root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_root, viewport);
     // Rendering:
-    let mut canvas = painting::Canvas::new(viewport.content.width as usize, viewport.content.height as usize, None);
-    canvas = painting::paint(&layout_root, canvas);
+    let canvas = painting::paint(&layout_root, &viewport.content);
+   
     
     //----------------------------------------------------------
     // Showing to the screen
     //----------------------------------------------------------
-    let window_res = create_window("main window", "HTML viewer", &canvas);
+    let window_res = create_window("main window", "HTML viewer", canvas);
     let window = match window_res {
         Ok(wnd) => wnd,
         Err(e) => {
@@ -71,6 +70,7 @@ fn main() {
             let mut string = std::io::stdin().lock().lines().next().unwrap().unwrap();
             string = string.to_lowercase();
             if string.pop().unwrap() == 'y' {
+                let canvas = painting::paint(&layout_root, &viewport.content);
                 save_to_file(&canvas, &filename.as_str(), png);
             }
             std::process::exit(-1)
@@ -79,6 +79,9 @@ fn main() {
 
     // main loop
     loop {
+        let rect = &layout::Rect {x: 0, y: 0, width: window.width, height: -window.height};
+        let canvas = painting::paint(&layout_root, &rect);
+        window.swap_buffer(canvas);
         if !window.handle_message() {
             break;
         }
@@ -86,10 +89,11 @@ fn main() {
 
     //-----------------------
     // Save image to file
-    //-----------------------
+    //-----------------------}
+    let canvas = painting::paint(&layout_root, &viewport.content);
     save_to_file(&canvas, &filename.as_str(), png);
     
-    println!("Window: {}x{}", window.width, window.height);
+    println!("Window: {}x{}", window.width as u32, window.height as u32);
 }
 
 fn read_source(filename: String) -> String {

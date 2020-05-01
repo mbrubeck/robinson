@@ -87,8 +87,9 @@ fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
 }
 
 /// Paint a tree of LayoutBoxes to an array of pixels.
-pub fn paint(layout_root: &LayoutBox, mut canvas: Canvas) -> Canvas {
+pub fn paint(layout_root: &LayoutBox, rect: &Rect) -> Canvas {
     let display_list = build_display_list(layout_root);
+    let mut canvas = Canvas::new(rect.width as usize, rect.height as usize, None);
     for item in display_list {
         canvas.paint_item(&item);
     }
@@ -103,8 +104,9 @@ impl Canvas {
             None => { Color { r: 255, g: 255, b: 255, a: 255 } }
         };
         
+        let size: usize = width * height;
         Canvas {
-            pixels: vec![fill_color; width * height],
+            pixels: vec![fill_color; size],
             width: width,
             height: height,
         }
@@ -114,10 +116,10 @@ impl Canvas {
         match *item {
             DisplayCommand::SolidColor(color, rect) => {
                 // Clip the rectangle to the canvas boundaries.
-                let x0 = rect.x.clamp(0.0, self.width as f32) as usize;
-                let y0 = rect.y.clamp(0.0, self.height as f32) as usize;
-                let x1 = (rect.x + rect.width).clamp(0.0, self.width as f32) as usize;
-                let y1 = (rect.y + rect.height).clamp(0.0, self.height as f32) as usize;
+                let x0 = rect.x.clamp(0, self.width as i32) as usize;
+                let y0 = rect.y.clamp(0, self.height as i32) as usize;
+                let x1 = (rect.x + rect.width).clamp(0, self.width as i32) as usize;
+                let y1 = (rect.y + rect.height).clamp(0, self.height as i32) as usize;
 
                 for y in y0 .. y1 {
                     for x in x0 .. x1 {
