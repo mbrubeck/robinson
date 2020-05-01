@@ -70,7 +70,8 @@ fn main() {
         println!("Error saving output as {}", filename)
     }
 
-    let mut window = create_window("main window", "HTML viewer").unwrap();
+    let mut window = create_window("main window", "HTML viewer",
+                            &(viewport.content.width as i32), &(viewport.content.height as i32)).unwrap();
     loop {
         if !handle_message(&mut window) {
             break;
