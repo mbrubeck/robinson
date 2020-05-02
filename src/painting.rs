@@ -7,16 +7,6 @@ pub struct Canvas {
     pub height: usize,
 }
 
-/// Paint a tree of LayoutBoxes to an array of pixels.
-pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
-    let display_list = build_display_list(layout_root);
-    let mut canvas = Canvas::new(bounds.width as usize, bounds.height as usize);
-    for item in display_list {
-        canvas.paint_item(&item);
-    }
-    canvas
-}
-
 #[derive(Debug)]
 pub enum DisplayCommand {
     SolidColor(Color, Rect),
@@ -96,12 +86,27 @@ fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
     }
 }
 
+/// Paint a tree of LayoutBoxes to an array of pixels.
+pub fn paint(layout_root: &LayoutBox, rect: &Rect) -> Canvas {
+    let display_list = build_display_list(layout_root);
+    let mut canvas = Canvas::new(rect.width as usize, rect.height as usize, None);
+    for item in display_list {
+        canvas.paint_item(&item);
+    }
+    canvas
+}
+
 impl Canvas {
     /// Create a blank canvas
-    fn new(width: usize, height: usize) -> Canvas {
-        let white = Color { r: 255, g: 255, b: 255, a: 255 };
+    pub fn new(width: usize, height: usize, color: Option<Color>) -> Canvas {
+        let fill_color: Color = match color {
+            Some(value) => value,
+            None => { Color { r: 255, g: 255, b: 255, a: 255 } }
+        };
+        
+        let size: usize = width * height;
         Canvas {
-            pixels: vec![white; width * height],
+            pixels: vec![fill_color; size],
             width: width,
             height: height,
         }
@@ -111,10 +116,10 @@ impl Canvas {
         match *item {
             DisplayCommand::SolidColor(color, rect) => {
                 // Clip the rectangle to the canvas boundaries.
-                let x0 = rect.x.clamp(0.0, self.width as f32) as usize;
-                let y0 = rect.y.clamp(0.0, self.height as f32) as usize;
-                let x1 = (rect.x + rect.width).clamp(0.0, self.width as f32) as usize;
-                let y1 = (rect.y + rect.height).clamp(0.0, self.height as f32) as usize;
+                let x0 = rect.x.clamp(0, self.width as i32) as usize;
+                let y0 = rect.y.clamp(0, self.height as i32) as usize;
+                let x1 = (rect.x + rect.width).clamp(0, self.width as i32) as usize;
+                let y1 = (rect.y + rect.height).clamp(0, self.height as i32) as usize;
 
                 for y in y0 .. y1 {
                     for x in x0 .. x1 {
@@ -124,14 +129,5 @@ impl Canvas {
                 }
             }
         }
-    }
-}
-
-trait Clamp {
-    fn clamp(self, lower: Self, upper: Self) -> Self;
-}
-impl Clamp for f32 {
-    fn clamp(self, lower: f32, upper: f32) -> f32 {
-        self.max(lower).min(upper)
     }
 }
