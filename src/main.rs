@@ -64,7 +64,7 @@ fn main() {
             let e = tuple.0;
             let layout_root = tuple.1;
             println!("Couldn't open a window: {}", e);
-            println!("Press 'Y' to render to a file (any key to exit): ");
+            println!("Press 'Y' to render to a PNG (any key to exit): ");
             let mut string = std::io::stdin().lock().lines().next().unwrap().unwrap();
             string = string.to_lowercase();
             //-----------------------
