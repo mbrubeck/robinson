@@ -8,7 +8,7 @@ use css::{Stylesheet, Rule, Selector, SimpleSelector, Value, Specificity};
 use std::collections::HashMap;
 
 /// Map from CSS property names to values.
-pub type PropertyMap =  HashMap<String, Value>;
+pub type PropertyMap = HashMap<String, Value>;
 
 /// A node with associated style data.
 pub struct StyledNode<'a> {

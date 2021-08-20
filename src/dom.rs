@@ -1,6 +1,6 @@
 //! Basic DOM data structures.
 
-use std::collections::{HashMap,HashSet};
+use std::collections::{HashMap, HashSet};
 
 pub type AttrMap = HashMap<String, String>;
 
