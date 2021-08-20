@@ -2,16 +2,16 @@ extern crate getopts;
 extern crate image;
 
 use std::default::Default;
-use std::io::{Read, BufWriter};
 use std::fs::File;
+use std::io::{BufWriter, Read};
 
 pub mod css;
 pub mod dom;
 pub mod html;
 pub mod layout;
-pub mod style;
 pub mod painting;
 pub mod pdf;
+pub mod style;
 
 fn main() {
     // Parse command-line options:
@@ -23,7 +23,7 @@ fn main() {
 
     let matches = opts.parse(std::env::args().skip(1)).unwrap();
     let str_arg = |flag: &str, default: &str| -> String {
-        matches.opt_str(flag).unwrap_or(default.to_string())
+        matches.opt_str(flag).unwrap_or_else(|| default.to_string())
     };
 
     // Choose a format:
@@ -35,11 +35,11 @@ fn main() {
 
     // Read input files:
     let html = read_source(str_arg("h", "examples/test.html"));
-    let css  = read_source(str_arg("c", "examples/test.css"));
+    let css = read_source(str_arg("c", "examples/test.css"));
 
     // Since we don't have an actual window, hard-code the "viewport" size.
     let mut viewport: layout::Dimensions = Default::default();
-    viewport.content.width  = 800.0;
+    viewport.content.width = 800.0;
     viewport.content.height = 600.0;
 
     // Parsing and rendering:
@@ -73,6 +73,9 @@ fn main() {
 
 fn read_source(filename: String) -> String {
     let mut str = String::new();
-    File::open(filename).unwrap().read_to_string(&mut str).unwrap();
+    File::open(filename)
+        .unwrap()
+        .read_to_string(&mut str)
+        .unwrap();
     str
 }

@@ -3,12 +3,12 @@
 //! This is not very interesting at the moment.  It will get much more
 //! complicated if I add support for compound selectors.
 
-use dom::{Node, NodeType, ElementData};
-use css::{Stylesheet, Rule, Selector, SimpleSelector, Value, Specificity};
+use css::{Rule, Selector, SimpleSelector, Specificity, Stylesheet, Value};
+use dom::{ElementData, Node, NodeType};
 use std::collections::HashMap;
 
 /// Map from CSS property names to values.
-pub type PropertyMap =  HashMap<String, Value>;
+pub type PropertyMap = HashMap<String, Value>;
 
 /// A node with associated style data.
 pub struct StyledNode<'a> {
@@ -33,8 +33,8 @@ impl<'a> StyledNode<'a> {
     /// Return the specified value of property `name`, or property `fallback_name` if that doesn't
     /// exist, or value `default` if neither does.
     pub fn lookup(&self, name: &str, fallback_name: &str, default: &Value) -> Value {
-        self.value(name).unwrap_or_else(|| self.value(fallback_name)
-                        .unwrap_or_else(|| default.clone()))
+        self.value(name)
+            .unwrap_or_else(|| self.value(fallback_name).unwrap_or_else(|| default.clone()))
     }
 
     /// The value of the `display` property (defaults to inline).
@@ -43,9 +43,9 @@ impl<'a> StyledNode<'a> {
             Some(Value::Keyword(s)) => match &*s {
                 "block" => Display::Block,
                 "none" => Display::None,
-                _ => Display::Inline
+                _ => Display::Inline,
             },
-            _ => Display::Inline
+            _ => Display::Inline,
         }
     }
 }
@@ -59,9 +59,13 @@ pub fn style_tree<'a>(root: &'a Node, stylesheet: &'a Stylesheet) -> StyledNode<
         node: root,
         specified_values: match root.node_type {
             NodeType::Element(ref elem) => specified_values(elem, stylesheet),
-            NodeType::Text(_) => HashMap::new()
+            NodeType::Text(_) => HashMap::new(),
         },
-        children: root.children.iter().map(|child| style_tree(child, stylesheet)).collect(),
+        children: root
+            .children
+            .iter()
+            .map(|child| style_tree(child, stylesheet))
+            .collect(),
     }
 }
 
@@ -90,27 +94,33 @@ fn matching_rules<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> Vec<Mat
     // For now, we just do a linear scan of all the rules.  For large
     // documents, it would be more efficient to store the rules in hash tables
     // based on tag name, id, class, etc.
-    stylesheet.rules.iter().filter_map(|rule| match_rule(elem, rule)).collect()
+    stylesheet
+        .rules
+        .iter()
+        .filter_map(|rule| match_rule(elem, rule))
+        .collect()
 }
 
 /// If `rule` matches `elem`, return a `MatchedRule`. Otherwise return `None`.
 fn match_rule<'a>(elem: &ElementData, rule: &'a Rule) -> Option<MatchedRule<'a>> {
     // Find the first (most specific) matching selector.
-    rule.selectors.iter().find(|selector| matches(elem, *selector))
+    rule.selectors
+        .iter()
+        .find(|selector| matches(elem, *selector))
         .map(|selector| (selector.specificity(), rule))
 }
 
 /// Selector matching:
 fn matches(elem: &ElementData, selector: &Selector) -> bool {
     match *selector {
-        Selector::Simple(ref simple_selector) => matches_simple_selector(elem, simple_selector)
+        Selector::Simple(ref simple_selector) => matches_simple_selector(elem, simple_selector),
     }
 }
 
 fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> bool {
     // Check type selector
     if selector.tag_name.iter().any(|name| elem.tag_name != *name) {
-        return false
+        return false;
     }
 
     // Check ID selector
@@ -120,7 +130,11 @@ fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> boo
 
     // Check class selectors
     let elem_classes = elem.classes();
-    if selector.class.iter().any(|class| !elem_classes.contains(&**class)) {
+    if selector
+        .class
+        .iter()
+        .any(|class| !elem_classes.contains(&**class))
+    {
         return false;
     }
 

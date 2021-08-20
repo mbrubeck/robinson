@@ -1,5 +1,5 @@
+use css::{Color, Value};
 use layout::{AnonymousBlock, BlockNode, InlineNode, LayoutBox, Rect};
-use css::{Value, Color};
 
 pub struct Canvas {
     pub pixels: Vec<Color>,
@@ -39,50 +39,68 @@ fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
 }
 
 fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
-    get_color(layout_box, "background").map(|color|
-        list.push(DisplayCommand::SolidColor(color, layout_box.dimensions.border_box())));
+    //get_color(layout_box, "background").map(|color|
+    //    list.push(DisplayCommand::SolidColor(color, layout_box.dimensions.border_box())));
+    if let Some(color) = get_color(layout_box, "background") {
+        list.push(DisplayCommand::SolidColor(
+            color,
+            layout_box.dimensions.border_box(),
+        ))
+    };
 }
 
 fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
     let color = match get_color(layout_box, "border-color") {
         Some(color) => color,
-        _ => return
+        _ => return,
     };
 
     let d = &layout_box.dimensions;
     let border_box = d.border_box();
 
     // Left border
-    list.push(DisplayCommand::SolidColor(color, Rect {
-        x: border_box.x,
-        y: border_box.y,
-        width: d.border.left,
-        height: border_box.height,
-    }));
+    list.push(DisplayCommand::SolidColor(
+        color,
+        Rect {
+            x: border_box.x,
+            y: border_box.y,
+            width: d.border.left,
+            height: border_box.height,
+        },
+    ));
 
     // Right border
-    list.push(DisplayCommand::SolidColor(color, Rect {
-        x: border_box.x + border_box.width - d.border.right,
-        y: border_box.y,
-        width: d.border.right,
-        height: border_box.height,
-    }));
+    list.push(DisplayCommand::SolidColor(
+        color,
+        Rect {
+            x: border_box.x + border_box.width - d.border.right,
+            y: border_box.y,
+            width: d.border.right,
+            height: border_box.height,
+        },
+    ));
 
     // Top border
-    list.push(DisplayCommand::SolidColor(color, Rect {
-        x: border_box.x,
-        y: border_box.y,
-        width: border_box.width,
-        height: d.border.top,
-    }));
+    list.push(DisplayCommand::SolidColor(
+        color,
+        Rect {
+            x: border_box.x,
+            y: border_box.y,
+            width: border_box.width,
+            height: d.border.top,
+        },
+    ));
 
     // Bottom border
-    list.push(DisplayCommand::SolidColor(color, Rect {
-        x: border_box.x,
-        y: border_box.y + border_box.height - d.border.bottom,
-        width: border_box.width,
-        height: d.border.bottom,
-    }));
+    list.push(DisplayCommand::SolidColor(
+        color,
+        Rect {
+            x: border_box.x,
+            y: border_box.y + border_box.height - d.border.bottom,
+            width: border_box.width,
+            height: d.border.bottom,
+        },
+    ));
 }
 
 /// Return the specified color for CSS property `name`, or None if no color was specified.
@@ -90,20 +108,25 @@ fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
     match layout_box.box_type {
         BlockNode(style) | InlineNode(style) => match style.value(name) {
             Some(Value::ColorValue(color)) => Some(color),
-            _ => None
+            _ => None,
         },
-        AnonymousBlock => None
+        AnonymousBlock => None,
     }
 }
 
 impl Canvas {
     /// Create a blank canvas
     fn new(width: usize, height: usize) -> Canvas {
-        let white = Color { r: 255, g: 255, b: 255, a: 255 };
+        let white = Color {
+            r: 255,
+            g: 255,
+            b: 255,
+            a: 255,
+        };
         Canvas {
             pixels: vec![white; width * height],
-            width: width,
-            height: height,
+            width,
+            height,
         }
     }
 
@@ -116,8 +139,8 @@ impl Canvas {
                 let x1 = (rect.x + rect.width).clamp(0.0, self.width as f32) as usize;
                 let y1 = (rect.y + rect.height).clamp(0.0, self.height as f32) as usize;
 
-                for y in y0 .. y1 {
-                    for x in x0 .. x1 {
+                for y in y0..y1 {
+                    for x in x0..x1 {
                         // TODO: alpha compositing with existing pixel
                         self.pixels[y * self.width + x] = color;
                     }

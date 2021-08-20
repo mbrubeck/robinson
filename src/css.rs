@@ -74,15 +74,20 @@ impl Value {
     pub fn to_px(&self) -> f32 {
         match *self {
             Value::Length(f, Unit::Px) => f,
-            _ => 0.0
+            _ => 0.0,
         }
     }
 }
 
 /// Parse a whole CSS stylesheet.
 pub fn parse(source: String) -> Stylesheet {
-    let mut parser = Parser { pos: 0, input: source };
-    Stylesheet { rules: parser.parse_rules() }
+    let mut parser = Parser {
+        pos: 0,
+        input: source,
+    };
+    Stylesheet {
+        rules: parser.parse_rules(),
+    }
 }
 
 struct Parser {
@@ -96,7 +101,9 @@ impl Parser {
         let mut rules = Vec::new();
         loop {
             self.consume_whitespace();
-            if self.eof() { break }
+            if self.eof() {
+                break;
+            }
             rules.push(self.parse_rule());
         }
         rules
@@ -117,19 +124,26 @@ impl Parser {
             selectors.push(Selector::Simple(self.parse_simple_selector()));
             self.consume_whitespace();
             match self.next_char() {
-                ',' => { self.consume_char(); self.consume_whitespace(); }
+                ',' => {
+                    self.consume_char();
+                    self.consume_whitespace();
+                }
                 '{' => break,
-                c   => panic!("Unexpected character {} in selector list", c)
+                c => panic!("Unexpected character {} in selector list", c),
             }
         }
         // Return selectors with highest specificity first, for use in matching.
-        selectors.sort_by(|a,b| b.specificity().cmp(&a.specificity()));
+        selectors.sort_by_key(|b| b.specificity());
         selectors
     }
 
     /// Parse one simple selector, e.g.: `type#id.class1.class2.class3`
     fn parse_simple_selector(&mut self) -> SimpleSelector {
-        let mut selector = SimpleSelector { tag_name: None, id: None, class: Vec::new() };
+        let mut selector = SimpleSelector {
+            tag_name: None,
+            id: None,
+            class: Vec::new(),
+        };
         while !self.eof() {
             match self.next_char() {
                 '#' => {
@@ -147,7 +161,7 @@ impl Parser {
                 c if valid_identifier_char(c) => {
                     selector.tag_name = Some(self.parse_identifier());
                 }
-                _ => break
+                _ => break,
             }
         }
         selector
@@ -180,7 +194,7 @@ impl Parser {
 
         Declaration {
             name: property_name,
-            value: value,
+            value,
         }
     }
 
@@ -188,9 +202,9 @@ impl Parser {
 
     fn parse_value(&mut self) -> Value {
         match self.next_char() {
-            '0'...'9' => self.parse_length(),
+            '0'..='9' => self.parse_length(),
             '#' => self.parse_color(),
-            _ => Value::Keyword(self.parse_identifier())
+            _ => Value::Keyword(self.parse_identifier()),
         }
     }
 
@@ -199,17 +213,14 @@ impl Parser {
     }
 
     fn parse_float(&mut self) -> f32 {
-        let s = self.consume_while(|c| match c {
-            '0'...'9' | '.' => true,
-            _ => false
-        });
+        let s = self.consume_while(|c| matches!(c, '0'..='9' | '.'));
         s.parse().unwrap()
     }
 
     fn parse_unit(&mut self) -> Unit {
         match &*self.parse_identifier().to_ascii_lowercase() {
             "px" => Unit::Px,
-            _ => panic!("unrecognized unit")
+            _ => panic!("unrecognized unit"),
         }
     }
 
@@ -219,12 +230,13 @@ impl Parser {
             r: self.parse_hex_pair(),
             g: self.parse_hex_pair(),
             b: self.parse_hex_pair(),
-            a: 255 })
+            a: 255,
+        })
     }
 
     /// Parse two hexadecimal digits.
     fn parse_hex_pair(&mut self) -> u8 {
-        let s = &self.input[self.pos .. self.pos + 2];
+        let s = &self.input[self.pos..self.pos + 2];
         self.pos += 2;
         u8::from_str_radix(s, 16).unwrap()
     }
@@ -241,7 +253,9 @@ impl Parser {
 
     /// Consume characters until `test` returns false.
     fn consume_while<F>(&mut self, test: F) -> String
-            where F: Fn(char) -> bool {
+    where
+        F: Fn(char) -> bool,
+    {
         let mut result = String::new();
         while !self.eof() && test(self.next_char()) {
             result.push(self.consume_char());
@@ -270,8 +284,5 @@ impl Parser {
 }
 
 fn valid_identifier_char(c: char) -> bool {
-    match c {
-        'a'...'z' | 'A'...'Z' | '0'...'9' | '-' | '_' => true, // TODO: Include U+00A0 and higher.
-        _ => false,
-    }
+    matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_')
 }
