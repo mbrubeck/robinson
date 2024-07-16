@@ -95,7 +95,7 @@ fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
     root
 }
 
-impl<'a> LayoutBox<'a> {
+impl LayoutBox<'_> {
     /// Lay out a box and its descendants.
     fn layout(&mut self, containing_block: Dimensions) {
         match self.box_type {
@@ -259,7 +259,7 @@ impl<'a> LayoutBox<'a> {
     }
 
     /// Where a new inline child should go.
-    fn get_inline_container(&mut self) -> &mut LayoutBox<'a> {
+    fn get_inline_container(&mut self) -> &mut Self {
         match self.box_type {
             InlineNode(_) | AnonymousBlock => self,
             BlockNode(_) => {
