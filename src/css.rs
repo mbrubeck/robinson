@@ -244,11 +244,9 @@ impl Parser {
 
     /// Return the current character, and advance self.pos to the next character.
     fn consume_char(&mut self) -> char {
-        let mut iter = self.input[self.pos..].char_indices();
-        let (_, cur_char) = iter.next().unwrap();
-        let (next_pos, _) = iter.next().unwrap_or((1, ' '));
-        self.pos += next_pos;
-        cur_char
+        let c = self.next_char();
+        self.pos += c.len_utf8();
+        c
     }
 
     /// Read the current character without consuming it.
