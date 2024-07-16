@@ -19,7 +19,7 @@ pub fn parse(source: String) -> dom::Node {
 
     // If the document contains a root element, just return it. Otherwise, create one.
     if nodes.len() == 1 {
-        nodes.pop().unwrap()
+        nodes.remove(0)
     } else {
         dom::elem("html".to_string(), HashMap::new(), nodes)
     }
