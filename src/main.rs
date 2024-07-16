@@ -58,9 +58,9 @@ fn main() {
         let (w, h) = (canvas.width as u32, canvas.height as u32);
         let img = image::ImageBuffer::from_fn(w, h, move |x, y| {
             let color = canvas.pixels[(y * w + x) as usize];
-            image::Pixel::from_channels(color.r, color.g, color.b, color.a)
+            image::Rgba([color.r, color.g, color.b, color.a])
         });
-        image::ImageRgba8(img).save(&mut file, image::PNG).is_ok()
+        image::DynamicImage::ImageRgba8(img).write_to(&mut file, image::ImageFormat::Png).is_ok()
     } else {
         pdf::render(&layout_root, viewport.content, &mut file).is_ok()
     };
