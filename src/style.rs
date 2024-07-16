@@ -111,7 +111,7 @@ fn matches(elem: &ElementData, selector: &Selector) -> bool {
 fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> bool {
     // Check type selector
     if selector.tag_name.iter().any(|name| elem.tag_name != *name) {
-        return false
+        return false;
     }
 
     // Check ID selector
@@ -120,8 +120,7 @@ fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> boo
     }
 
     // Check class selectors
-    let elem_classes = elem.classes();
-    if selector.class.iter().any(|class| !elem_classes.contains(&**class)) {
+    if selector.class.iter().any(|class| !elem.classes().contains(class.as_str())) {
         return false;
     }
 
