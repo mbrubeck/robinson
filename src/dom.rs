@@ -22,7 +22,7 @@ pub enum NodeType {
 #[derive(Debug)]
 pub struct ElementData {
     pub tag_name: String,
-    pub attributes: AttrMap,
+    pub attrs: AttrMap,
 }
 
 // Constructor functions for convenience:
@@ -31,13 +31,10 @@ pub fn text(data: String) -> Node {
     Node { children: vec![], node_type: NodeType::Text(data) }
 }
 
-pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
+pub fn elem(tag_name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
     Node {
-        children: children,
-        node_type: NodeType::Element(ElementData {
-            tag_name: name,
-            attributes: attrs,
-        })
+        children,
+        node_type: NodeType::Element(ElementData { tag_name, attrs })
     }
 }
 
@@ -45,11 +42,11 @@ pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
 
 impl ElementData {
     pub fn id(&self) -> Option<&String> {
-        self.attributes.get("id")
+        self.attrs.get("id")
     }
 
     pub fn classes(&self) -> HashSet<&str> {
-        match self.attributes.get("class") {
+        match self.attrs.get("class") {
             Some(classlist) => classlist.split(' ').collect(),
             None => HashSet::new()
         }

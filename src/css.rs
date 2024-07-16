@@ -123,7 +123,7 @@ impl Parser {
             }
         }
         // Return selectors with highest specificity first, for use in matching.
-        selectors.sort_by(|a,b| b.specificity().cmp(&a.specificity()));
+        selectors.sort_by_key(|s| s.specificity());
         selectors
     }
 
@@ -170,7 +170,7 @@ impl Parser {
 
     /// Parse one `<property>: <value>;` declaration.
     fn parse_declaration(&mut self) -> Declaration {
-        let property_name = self.parse_identifier();
+        let name = self.parse_identifier();
         self.consume_whitespace();
         assert_eq!(self.consume_char(), ':');
         self.consume_whitespace();
@@ -178,10 +178,7 @@ impl Parser {
         self.consume_whitespace();
         assert_eq!(self.consume_char(), ';');
 
-        Declaration {
-            name: property_name,
-            value: value,
-        }
+        Declaration { name, value }
     }
 
     // Methods for parsing values:
@@ -199,11 +196,7 @@ impl Parser {
     }
 
     fn parse_float(&mut self) -> f32 {
-        let s = self.consume_while(|c| match c {
-            '0'..='9' | '.' => true,
-            _ => false
-        });
-        s.parse().unwrap()
+        self.consume_while(|c| matches!(c, '0'..='9' | '.')).parse().unwrap()
     }
 
     fn parse_unit(&mut self) -> Unit {
@@ -270,8 +263,6 @@ impl Parser {
 }
 
 fn valid_identifier_char(c: char) -> bool {
-    match c {
-        'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_' => true, // TODO: Include U+00A0 and higher.
-        _ => false,
-    }
+    // TODO: Include U+00A0 and higher.
+    matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_')
 }

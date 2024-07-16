@@ -103,8 +103,8 @@ impl Canvas {
         let white = Color { r: 255, g: 255, b: 255, a: 255 };
         Canvas {
             pixels: vec![white; width * height],
-            width: width,
-            height: height,
+            width,
+            height,
         }
     }
 
@@ -125,14 +125,5 @@ impl Canvas {
                 }
             }
         }
-    }
-}
-
-trait Clamp {
-    fn clamp(self, lower: Self, upper: Self) -> Self;
-}
-impl Clamp for f32 {
-    fn clamp(self, lower: f32, upper: f32) -> f32 {
-        self.max(lower).min(upper)
     }
 }

@@ -1,4 +1,4 @@
-///! Basic CSS block layout.
+//! Basic CSS block layout.
 
 use style::{StyledNode, Display};
 use css::Value::{Keyword, Length};
@@ -51,8 +51,8 @@ pub enum BoxType<'a> {
 impl<'a> LayoutBox<'a> {
     fn new(box_type: BoxType) -> LayoutBox {
         LayoutBox {
-            box_type: box_type,
-            dimensions: Default::default(),
+            box_type,
+            dimensions: Default::default(), // initially set all fields to 0.0
             children: Vec::new(),
         }
     }
@@ -243,11 +243,10 @@ impl<'a> LayoutBox<'a> {
     ///
     /// Sets `self.dimensions.height` to the total content height.
     fn layout_block_children(&mut self) {
-        let d = &mut self.dimensions;
         for child in &mut self.children {
-            child.layout(*d);
+            child.layout(self.dimensions);
             // Increment the height so each child is laid out below the previous one.
-            d.content.height = d.content.height + child.dimensions.margin_box().height;
+            self.dimensions.content.height += child.dimensions.margin_box().height;
         }
     }
 

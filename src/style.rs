@@ -96,7 +96,8 @@ fn matching_rules<'a>(elem: &ElementData, stylesheet: &'a Stylesheet) -> Vec<Mat
 /// If `rule` matches `elem`, return a `MatchedRule`. Otherwise return `None`.
 fn match_rule<'a>(elem: &ElementData, rule: &'a Rule) -> Option<MatchedRule<'a>> {
     // Find the first (most specific) matching selector.
-    rule.selectors.iter().find(|selector| matches(elem, *selector))
+    rule.selectors
+        .iter().find(|selector| matches(elem, selector))
         .map(|selector| (selector.specificity(), rule))
 }
 

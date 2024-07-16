@@ -1,6 +1,6 @@
 use layout::{LayoutBox, Rect};
 use painting::{build_display_list, DisplayCommand};
-use std::io::{self, Seek, SeekFrom, Write};
+use std::io::{self, Seek, Write};
 
 fn px_to_pt(value: f32) -> f32 {
     // 96px = 1in = 72pt
@@ -68,7 +68,7 @@ impl<'a, W: Write + Seek> Pdf<'a, W> {
 
     /// Return the current read/write position in the output file.
     fn tell(&mut self) -> io::Result<u64> {
-        self.output.seek(SeekFrom::Current(0))
+        self.output.stream_position()
     }
 
     fn render_page<F>(&mut self, width: f32, height: f32, render_contents: F) -> io::Result<()>
