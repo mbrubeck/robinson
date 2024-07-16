@@ -1,5 +1,5 @@
-use layout::{LayoutBox, Rect};
-use painting::{build_display_list, DisplayCommand};
+use crate::layout::{LayoutBox, Rect};
+use crate::painting::{build_display_list, DisplayCommand};
 use std::io::{self, Seek, Write};
 
 fn px_to_pt(value: f32) -> f32 {

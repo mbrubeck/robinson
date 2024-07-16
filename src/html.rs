@@ -10,7 +10,7 @@
 //! * Non-well-formed markup
 //! * Character entities
 
-use dom;
+use crate::dom;
 use std::collections::HashMap;
 
 /// Parse an HTML document and return the root element.
@@ -56,19 +56,18 @@ impl Parser {
     /// Parse a single element, including its open tag, contents, and closing tag.
     fn parse_element(&mut self) -> dom::Node {
         // Opening tag.
-        assert_eq!(self.consume_char(), '<');
+        self.expect("<");
         let tag_name = self.parse_name();
         let attrs = self.parse_attributes();
-        assert_eq!(self.consume_char(), '>');
+        self.expect(">");
 
         // Contents.
         let children = self.parse_nodes();
 
         // Closing tag.
-        assert_eq!(self.consume_char(), '<');
-        assert_eq!(self.consume_char(), '/');
-        assert_eq!(self.parse_name(), tag_name);
-        assert_eq!(self.consume_char(), '>');
+        self.expect("</");
+        self.expect(&tag_name);
+        self.expect(">");
 
         dom::elem(tag_name, attrs, children)
     }
@@ -95,7 +94,7 @@ impl Parser {
     /// Parse a single name="value" pair.
     fn parse_attr(&mut self) -> (String, String) {
         let name = self.parse_name();
-        assert_eq!(self.consume_char(), '=');
+        self.expect("=");
         let value = self.parse_attr_value();
         (name, value)
     }
@@ -105,7 +104,8 @@ impl Parser {
         let open_quote = self.consume_char();
         assert!(open_quote == '"' || open_quote == '\'');
         let value = self.consume_while(|c| c != open_quote);
-        assert_eq!(self.consume_char(), open_quote);
+        let close_quote = self.consume_char();
+        assert_eq!(open_quote, close_quote);
         value
     }
 
@@ -143,6 +143,16 @@ impl Parser {
     /// Does the current input start with the given string?
     fn starts_with(&self, s: &str) -> bool {
         self.input[self.pos ..].starts_with(s)
+    }
+
+    /// If the exact string `s` is found at the current position, consume it.
+    /// Otherwise, panic.
+    fn expect(&mut self, s: &str) {
+        if self.starts_with(s) {
+            self.pos += s.len();
+        } else {
+            panic!("Expected {:?} at byte {} but it was not found", s, self.pos);
+        }
     }
 
     /// Return true if all input is consumed.

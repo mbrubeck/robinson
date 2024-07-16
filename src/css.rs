@@ -155,7 +155,7 @@ impl Parser {
 
     /// Parse a list of declarations enclosed in `{ ... }`.
     fn parse_declarations(&mut self) -> Vec<Declaration> {
-        assert_eq!(self.consume_char(), '{');
+        self.expect_char('{');
         let mut declarations = Vec::new();
         loop {
             self.consume_whitespace();
@@ -172,11 +172,11 @@ impl Parser {
     fn parse_declaration(&mut self) -> Declaration {
         let name = self.parse_identifier();
         self.consume_whitespace();
-        assert_eq!(self.consume_char(), ':');
+        self.expect_char(':');
         self.consume_whitespace();
         let value = self.parse_value();
         self.consume_whitespace();
-        assert_eq!(self.consume_char(), ';');
+        self.expect_char(';');
 
         Declaration { name, value }
     }
@@ -207,7 +207,7 @@ impl Parser {
     }
 
     fn parse_color(&mut self) -> Value {
-        assert_eq!(self.consume_char(), '#');
+        self.expect_char('#');
         Value::ColorValue(Color {
             r: self.parse_hex_pair(),
             g: self.parse_hex_pair(),
@@ -246,6 +246,14 @@ impl Parser {
         let c = self.next_char();
         self.pos += c.len_utf8();
         c
+    }
+
+    /// If the exact string `s` is found at the current position, consume it.
+    /// Otherwise, panic.
+    fn expect_char(&mut self, c: char) {
+        if self.consume_char() != c {
+            panic!("Expected {:?} at byte {} but it was not found", c, self.pos);
+        }
     }
 
     /// Read the current character without consuming it.
