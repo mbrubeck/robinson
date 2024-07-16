@@ -120,8 +120,7 @@ impl Parser {
     }
 
     /// Consume characters until `test` returns false.
-    fn consume_while<F>(&mut self, test: F) -> String
-            where F: Fn(char) -> bool {
+    fn consume_while(&mut self, test: impl Fn(char) -> bool) -> String {
         let mut result = String::new();
         while !self.eof() && test(self.next_char()) {
             result.push(self.consume_char());
