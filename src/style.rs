@@ -104,7 +104,7 @@ fn match_rule<'a>(elem: &ElementData, rule: &'a Rule) -> Option<MatchedRule<'a>>
 /// Selector matching:
 fn matches(elem: &ElementData, selector: &Selector) -> bool {
     match selector {
-        Selector::Simple(simple_selector) => matches_simple_selector(elem, simple_selector)
+        Selector::Simple(s) => matches_simple_selector(elem, s)
     }
 }
 
