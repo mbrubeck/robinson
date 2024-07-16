@@ -57,7 +57,7 @@ impl Parser {
     fn parse_element(&mut self) -> dom::Node {
         // Opening tag.
         assert_eq!(self.consume_char(), '<');
-        let tag_name = self.parse_tag_name();
+        let tag_name = self.parse_name();
         let attrs = self.parse_attributes();
         assert_eq!(self.consume_char(), '>');
 
@@ -67,14 +67,14 @@ impl Parser {
         // Closing tag.
         assert_eq!(self.consume_char(), '<');
         assert_eq!(self.consume_char(), '/');
-        assert_eq!(self.parse_tag_name(), tag_name);
+        assert_eq!(self.parse_name(), tag_name);
         assert_eq!(self.consume_char(), '>');
 
         dom::elem(tag_name, attrs, children)
     }
 
     /// Parse a tag or attribute name.
-    fn parse_tag_name(&mut self) -> String {
+    fn parse_name(&mut self) -> String {
         self.consume_while(|c| matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9'))
     }
 
@@ -94,7 +94,7 @@ impl Parser {
 
     /// Parse a single name="value" pair.
     fn parse_attr(&mut self) -> (String, String) {
-        let name = self.parse_tag_name();
+        let name = self.parse_name();
         assert_eq!(self.consume_char(), '=');
         let value = self.parse_attr_value();
         (name, value)
